@@ -514,3 +514,13 @@ In short: you can use, modify, and distribute this project, including commercial
 ---
 
 **73 de 9M2PJU** - happy debloating!
+
+---
+
+## Sponsor
+
+If this script saved you time, consider buying me a coffee:
+
+<a href="https://www.buymeacoffee.com/9m2pju"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=&slug=9m2pju&button_colour=FFDD00&font_colour=000000&font_family=Inter&outline_colour=000000&coffee_colour=ffffff" alt="Buy me a coffee" width="180"></a>
+
+Or use the **Sponsor** button at the top of this repo on GitHub.
