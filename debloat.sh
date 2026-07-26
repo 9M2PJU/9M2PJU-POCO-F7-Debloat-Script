@@ -9,7 +9,7 @@
 #   bash debloat.sh             # interactive (explains + prompts per package)
 #   bash debloat.sh --yes       # non-interactive, removes all batches
 #   bash debloat.sh --list      # only list what would be removed, do nothing
-#   bash debloat.sh --batch 2   # only run batch N (1-6)
+#   bash debloat.sh --batch 2   # only run batch N (1-7)
 #
 # Each removed package is appended to removed_packages.txt in the same
 # folder as this script. Pair with restore.sh to undo.
@@ -244,6 +244,10 @@ BATCH6=(
   "com.xiaomi.barrage|Xiaomi bullet comments (danmaku overlay)|Chinese-market feature for floating comments on videos. Useless outside China."
 )
 
+BATCH7=(
+  "com.tencent.soter.soterserver|Tencent SOTER biometric auth server|Chinese biometric authentication standard for WeChat/QQ. Useless outside China. Uses ~6 MB RAM when running."
+)
+
 # ---------- Parse args ----------
 while [ "$#" -gt 0 ]; do
   case "$1" in
@@ -301,6 +305,7 @@ run_one 3 "Meta services"                         "${BATCH3[@]}"
 run_one 4 "Microsoft Link to Windows"             "${BATCH4[@]}"
 run_one 5 "Xiaomi app drawer search + minus screen" "${BATCH5[@]}"
 run_one 6 "Google + Xiaomi extra bloat"           "${BATCH6[@]}"
+run_one 7 "Chinese biometric auth (Tencent SOTER)" "${BATCH7[@]}"
 
 if [ "$LIST_ONLY" = "1" ]; then
   echo "List-only mode - nothing was changed."

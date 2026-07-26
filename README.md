@@ -25,10 +25,10 @@ curl -fsSL https://raw.githubusercontent.com/9M2PJU/9M2PJU-POCO-F7-Debloat-Scrip
 # Download only, don't run yet (review the scripts first)
 curl -fsSL https://raw.githubusercontent.com/9M2PJU/9M2PJU-POCO-F7-Debloat-Script/main/install.sh | bash -s -- --no-run
 
-# Non-interactive - remove all 6 batches without prompting
+# Non-interactive - remove all 7 batches without prompting
 curl -fsSL https://raw.githubusercontent.com/9M2PJU/9M2PJU-POCO-F7-Debloat-Script/main/install.sh | bash -s -- --yes
 
-# Run only a specific batch (1-6)
+# Run only a specific batch (1-7)
 curl -fsSL https://raw.githubusercontent.com/9M2PJU/9M2PJU-POCO-F7-Debloat-Script/main/install.sh | bash -s -- --batch 1
 
 # Install to a specific directory
@@ -79,7 +79,7 @@ Three bash scripts that talk to your POCO F7 over `adb`:
 | Script | Purpose |
 |---|---|
 | `install.sh` | One-liner installer - downloads `debloat.sh` + `restore.sh` from GitHub and runs debloat interactively |
-| `debloat.sh` | Removes 26 known-safe bloat packages in 6 small batches. Interactive mode explains each package and prompts y/N/s per package. Also supports `--yes` (non-interactive) and `--list` (dry-run) |
+| `debloat.sh` | Removes 27 known-safe bloat packages in 7 small batches. Interactive mode explains each package and prompts y/N/s per package. Also supports `--yes` (non-interactive) and `--list` (dry-run) |
 | `restore.sh` | Restores removed packages from the untouched `/system` partition (no internet needed). Interactive mode explains each package and prompts y/N/s per package. Also supports `--yes`, `--list`, `--batch N`, and explicit package names |
 
 Everything is **reversible**, **no root**, **no bootloader unlock**, **no warranty impact**, **no banking/Play Integrity breakage**.
@@ -98,6 +98,7 @@ A stock POCO F7 ships with ~405 system packages. Many are useful, but a meaningf
 4. **Microsoft Link to Windows** services that run whether or not you use Phone Link on a PC
 5. **Xiaomi's app recommendation engine** (GetApps / `mipicks` / `discover`) which pushes junk app installs in the background
 6. **Google + Xiaomi extra bloat** (Google Duo/Meet, YouTube Music system app, Digital Wellbeing, Xiaomi barrage) that waste RAM or have better replacements
+7. **Chinese-market services** (Tencent SOTER biometric auth) that are useless outside China and waste RAM
 
 Removing these:
 - Cuts background CPU/RAM usage (~500 MB+ RAM savings total)
@@ -132,9 +133,9 @@ This section shows what the debloat actually achieved on the author's POCO F7, s
 
 ### Stock vs after debloat - the numbers
 
-| Metric | Stock (out of the box) | After all 6 batches | Difference |
+| Metric | Stock (out of the box) | After all 7 batches | Difference |
 |---|---|---|---|
-| System packages (user 0) | 405 | **379** | -26 packages |
+| System packages (user 0) | 405 | **378** | -27 packages |
 | Background telemetry SDKs | 4 (MSA, Joyose, analytics, bugreport) + MiSightService | **0** | -5 telemetry services |
 | Ad surfaces | Notifications, GetApps, Settings, minus screen, app drawer search | **None** | All ad surfaces removed |
 | Meta background tracking | 3 services running constantly | **0** | -3 tracking services |
@@ -147,7 +148,7 @@ This section shows what the debloat actually achieved on the author's POCO F7, s
 | GetApps auto-installing junk | Yes (in background) | **No** | Eliminated |
 | Telemetry phoning home | Xiaomi + Meta + Microsoft | **Xiaomi core only** | Most telemetry stopped |
 
-### What was removed (26 packages across 6 batches)
+### What was removed (27 packages across 7 batches)
 
 **Batch 1 - Ad/telemetry (4):** MSA (Xiaomi Ad SDK), Joyose, analytics, bugreport
 **Batch 2 - Xiaomi duplicate apps (9):** Mi Browser, Mi Music, Mi Video, YellowPage, TouchAssistant, ThirdAppAssistant, SecurityAdd, GetApps, Discover
@@ -155,6 +156,7 @@ This section shows what the debloat actually achieved on the author's POCO F7, s
 **Batch 4 - Microsoft Link to Windows (3):** appmanager, deviceintegrationservice, crossdeviceservicebroker
 **Batch 5 - Xiaomi app drawer + minus screen (2):** appfinder, globalminusscreen
 **Batch 6 - Google + Xiaomi extra (5):** Duo/Meet, YouTube Music, Digital Wellbeing, MiSightService, Barrage
+**Batch 7 - Chinese biometric auth (1):** Tencent SOTER
 
 ### What was deliberately KEPT (and why)
 
@@ -179,6 +181,21 @@ The author reviewed every remaining suspicious package and chose to keep these b
 | `com.miuix.editor` (Mi Video Editor) | Video editing |
 | `com.miui.extraphoto` | Photo effects/filters |
 | `com.xiaomi.mtb` / `ugd` | Unknown purpose - kept for safety |
+| `com.google.android.gm` (Gmail, 107 MB RAM) | Primary email app - no other email client installed |
+| `com.google.android.googlequicksearchbox` (Google app) | Google Assistant + Discover feed - used |
+| `com.google.android.projection.gearhead` (Android Auto) | Car infotainment integration - used |
+| `com.google.android.adservices.api` (15 MB RAM) | Google ad services API - kept for app compatibility |
+| `com.google.android.as` + `as.oss` (30 MB RAM) | Android System Intelligence - Live Caption, Smart Reply, notification ranking |
+| `com.google.android.federatedcompute` (6 MB RAM) | Federated learning - kept for on-device ML features |
+| `com.google.android.ondevicepersonalization.services` (6 MB RAM) | On-device personalization - kept |
+| `com.miui.cloudbackup` + `micloudsync` + `micloud.sdk` (14 MB RAM) | Mi Cloud backup/sync - used |
+| `com.miui.misound` (8 MB RAM) | Audio effects / Dolby Atmos - used |
+| `com.xiaomi.mirror` (18 MB RAM) | Screen mirroring to TV - used |
+| `com.xiaomi.finddevice` (20 MB RAM) | Find My Phone anti-theft - kept as security feature |
+| `com.miui.phrase` (7 MB RAM) | Quick reply phrases - kept |
+| `com.wdstechnology.android.kryten` | Unknown purpose (WDStechnology) - kept for safety |
+| `com.bsp.catchlog` | BSP debug log capture - kept for diagnostics |
+| `com.jiiov.fingerprint_factorytest` | Fingerprint factory test - harmless, kept |
 
 ### The concrete advantages after debloat
 
@@ -269,10 +286,10 @@ This is the safest possible debloat method. The riskier alternatives (root + `/s
 ├── README.md                           # This file
 └── backup/                             # Snapshot of the author's debloat session
     ├── build_info.txt                  # ROM fingerprint, HyperOS version, security patch
-    ├── removed_packages.txt            # The removal log (26 packages, batched + dated)
+    ├── removed_packages.txt            # The removal log (27 packages, batched + dated)
     ├── removed_diff.txt                # Auto-generated diff confirming what was removed
     ├── system_packages_before.txt      # 405 system packages before debloat
-    ├── system_packages_after.txt       # 379 system packages after debloat
+    ├── system_packages_after.txt       # 378 system packages after debloat
     ├── enabled_packages_before.txt     # 547 user-0 packages before
     ├── enabled_packages_after.txt      # 532 user-0 packages after
     ├── disabled_packages_before.txt    # Pre-existing disabled packages (4)
@@ -424,7 +441,7 @@ bash debloat.sh --list
 # 4. Run interactively (explains each package, prompts y/N/s per package)
 bash debloat.sh
 
-# Or run non-interactively (removes all 6 batches without prompting)
+# Or run non-interactively (removes all 7 batches without prompting)
 bash debloat.sh --yes
 
 # Or run a single batch only
@@ -545,6 +562,12 @@ bash restore.sh --batch 1
 | `com.miui.misightservice` | Xiaomi insights/telemetry (10 MB RAM running) | Same telemetry category as Joyose (Batch 1) |
 | `com.xiaomi.barrage` | Xiaomi bullet comments (danmaku overlay) | Chinese-market feature; useless outside China |
 
+### Batch 7 - Chinese biometric auth (1 package)
+
+| Package | What it is | Why remove |
+|---|---|---|
+| `com.tencent.soter.soterserver` | Tencent SOTER biometric auth server (6 MB RAM running) | Chinese biometric authentication standard for WeChat/QQ login. Useless outside China |
+
 ---
 
 ## Backup & restore
@@ -571,7 +594,7 @@ bash restore.sh com.miui.msa.global
 # Restore several packages
 bash restore.sh com.miui.msa.global com.xiaomi.joyose com.miui.analytics
 
-# Restore a specific batch (1-6)
+# Restore a specific batch (1-7)
 bash restore.sh --batch 3
 
 # Preview what would be restored (dry run)
@@ -830,7 +853,7 @@ A: No. The package names (`com.miui.*`, `com.xiaomi.*`) are Xiaomi-specific. Sam
 A: No. This is the whole point - it works on a fully stock, locked device.
 
 **Q: How much RAM/storage does this free?**
-A: RAM: ~600 MB - 1.2 GB depending on what was running (Batch 6 alone frees ~130 MB from running processes). Storage: minimal (~50-100 MB), because the APKs stay on `/system`. The main benefit is reduced background CPU/battery drain and privacy, not storage.
+A: RAM: ~600 MB - 1.2 GB depending on what was running (Batches 6+7 alone free ~136 MB from running processes). Storage: minimal (~50-100 MB), because the APKs stay on `/system`. The main benefit is reduced background CPU/battery drain and privacy, not storage.
 
 **Q: Will GetApps come back?**
 A: After a major HyperOS OTA, possibly yes. Re-run `debloat.sh --yes` to re-remove. This is why the script is idempotent.

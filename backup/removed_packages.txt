@@ -47,3 +47,6 @@ com.google.android.apps.youtube.music
 com.google.android.apps.wellbeing
 com.miui.misightservice
 com.xiaomi.barrage
+
+# 2026-07-26 - Batch 7: Chinese biometric auth (Tencent SOTER)
+com.tencent.soter.soterserver

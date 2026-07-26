@@ -73,6 +73,7 @@ PKG_META=(
   "com.google.android.apps.wellbeing|Digital Wellbeing|Was removed: screen time tracker. Used ~37 MB RAM."
   "com.miui.misightservice|Xiaomi insights/telemetry|Was removed: telemetry. Used ~10 MB RAM."
   "com.xiaomi.barrage|Xiaomi bullet comments (danmaku)|Was removed: Chinese-market feature, useless outside China."
+  "com.tencent.soter.soterserver|Tencent SOTER biometric auth server|Was removed: Chinese biometric auth for WeChat/QQ. Useless outside China. Used ~6 MB RAM."
 )
 
 # ---------- Look up metadata for a package ----------
