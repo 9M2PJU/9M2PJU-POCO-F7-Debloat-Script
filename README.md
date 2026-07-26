@@ -6,8 +6,42 @@ A safe, reversible, no-root debloat toolkit for the **POCO F7 (codename `onyx_gl
 
 ---
 
+## One-liner (the fast way)
+
+Connect your POCO F7 via USB with USB debugging enabled, then run:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/9M2PJU/9M2PJU-POCO-F7-Debloat-Script/main/install.sh | bash
+```
+
+This downloads `debloat.sh` + `restore.sh` into the current directory and runs `debloat.sh` interactively (prompts y/N before each batch).
+
+### One-liner variants
+
+```bash
+# Preview only — show what would be removed, change nothing
+curl -fsSL https://raw.githubusercontent.com/9M2PJU/9M2PJU-POCO-F7-Debloat-Script/main/install.sh | bash -s -- --list
+
+# Download only, don't run yet (review the scripts first)
+curl -fsSL https://raw.githubusercontent.com/9M2PJU/9M2PJU-POCO-F7-Debloat-Script/main/install.sh | bash -s -- --no-run
+
+# Non-interactive — remove all 5 batches without prompting
+curl -fsSL https://raw.githubusercontent.com/9M2PJU/9M2PJU-POCO-F7-Debloat-Script/main/install.sh | bash -s -- --yes
+
+# Run only a specific batch (1-5)
+curl -fsSL https://raw.githubusercontent.com/9M2PJU/9M2PJU-POCO-F7-Debloat-Script/main/install.sh | bash -s -- --batch 1
+
+# Install to a specific directory
+curl -fsSL https://raw.githubusercontent.com/9M2PJU/9M2PJU-POCO-F7-Debloat-Script/main/install.sh | bash -s -- --dir ~/poco-f7
+```
+
+> **Security note:** `curl | bash` runs code from the internet. If you'd rather review first, use `--no-run` or clone the repo (see [Quick start](#quick-start)) and inspect the scripts before executing.
+
+---
+
 ## Table of contents
 
+- [One-liner (the fast way)](#one-liner-the-fast-way)
 - [What this project does](#what-this-project-does)
 - [Why debloat?](#why-debloat)
 - [How it works (the science)](#how-it-works-the-science)
@@ -29,10 +63,11 @@ A safe, reversible, no-root debloat toolkit for the **POCO F7 (codename `onyx_gl
 
 ## What this project does
 
-Two bash scripts that talk to your POCO F7 over `adb`:
+Three bash scripts that talk to your POCO F7 over `adb`:
 
 | Script | Purpose |
 |---|---|
+| `install.sh` | One-liner installer — downloads `debloat.sh` + `restore.sh` from GitHub and runs debloat interactively |
 | `debloat.sh` | Removes 21 known-safe bloat packages in 5 small batches, with interactive prompts and a dry-run mode |
 | `restore.sh` | Restores any removed package instantly from the untouched `/system` partition (no internet needed) |
 
@@ -96,6 +131,7 @@ This is the safest possible debloat method. The riskier alternatives (root + `/s
 
 ```
 9M2PJU-POCO-F7-Debloat-Script/
+├── install.sh                          # One-liner installer (downloads + runs)
 ├── debloat.sh                          # Main debloat script (executable)
 ├── restore.sh                          # Restore script (executable)
 ├── README.md                           # This file
