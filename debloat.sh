@@ -9,7 +9,7 @@
 #   bash debloat.sh             # interactive (prompts before each batch)
 #   bash debloat.sh --yes       # non-interactive, removes all batches
 #   bash debloat.sh --list      # only list what would be removed, do nothing
-#   bash debloat.sh --batch 2   # only run batch N (1-4)
+#   bash debloat.sh --batch 2   # only run batch N (1-6)
 #
 # Each removed package is appended to removed_packages.txt in the same
 # folder as this script. Pair with restore.sh to undo.
@@ -119,6 +119,8 @@ BATCH3=(com.facebook.system com.facebook.services com.facebook.appmanager)
 BATCH4=(com.microsoft.appmanager com.microsoft.deviceintegrationservice
         com.microsoftsdk.crossdeviceservicebroker)
 BATCH5=(com.mi.appfinder com.mi.globalminusscreen)
+BATCH6=(com.google.android.apps.tachyon com.google.android.apps.youtube.music
+        com.google.android.apps.wellbeing com.miui.misightservice com.xiaomi.barrage)
 
 # ---------- Parse args ----------
 while [ "$#" -gt 0 ]; do
@@ -164,6 +166,7 @@ run_one 2 "Xiaomi duplicate apps" "${BATCH2[@]}"
 run_one 3 "Meta services"         "${BATCH3[@]}"
 run_one 4 "Microsoft Link to Windows" "${BATCH4[@]}"
 run_one 5 "Xiaomi app drawer search + minus screen" "${BATCH5[@]}"
+run_one 6 "Google + Xiaomi extra bloat" "${BATCH6[@]}"
 
 if [ "$LIST_ONLY" = "1" ]; then
   echo "List-only mode — nothing was changed."

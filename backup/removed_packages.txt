@@ -40,3 +40,10 @@ com.microsoftsdk.crossdeviceservicebroker
 # Batch 5 — Xiaomi app drawer search + minus screen (removed 2026-07-26)
 com.mi.appfinder
 com.mi.globalminusscreen
+
+# 2026-07-26 — Batch 6: Google + Xiaomi extra bloat
+com.google.android.apps.tachyon
+com.google.android.apps.youtube.music
+com.google.android.apps.wellbeing
+com.miui.misightservice
+com.xiaomi.barrage

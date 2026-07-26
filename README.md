@@ -25,10 +25,10 @@ curl -fsSL https://raw.githubusercontent.com/9M2PJU/9M2PJU-POCO-F7-Debloat-Scrip
 # Download only, don't run yet (review the scripts first)
 curl -fsSL https://raw.githubusercontent.com/9M2PJU/9M2PJU-POCO-F7-Debloat-Script/main/install.sh | bash -s -- --no-run
 
-# Non-interactive - remove all 5 batches without prompting
+# Non-interactive - remove all 6 batches without prompting
 curl -fsSL https://raw.githubusercontent.com/9M2PJU/9M2PJU-POCO-F7-Debloat-Script/main/install.sh | bash -s -- --yes
 
-# Run only a specific batch (1-5)
+# Run only a specific batch (1-6)
 curl -fsSL https://raw.githubusercontent.com/9M2PJU/9M2PJU-POCO-F7-Debloat-Script/main/install.sh | bash -s -- --batch 1
 
 # Install to a specific directory
@@ -78,7 +78,7 @@ Three bash scripts that talk to your POCO F7 over `adb`:
 | Script | Purpose |
 |---|---|
 | `install.sh` | One-liner installer - downloads `debloat.sh` + `restore.sh` from GitHub and runs debloat interactively |
-| `debloat.sh` | Removes 21 known-safe bloat packages in 5 small batches, with interactive prompts and a dry-run mode |
+| `debloat.sh` | Removes 26 known-safe bloat packages in 6 small batches, with interactive prompts and a dry-run mode |
 | `restore.sh` | Restores any removed package instantly from the untouched `/system` partition (no internet needed) |
 
 Everything is **reversible**, **no root**, **no bootloader unlock**, **no warranty impact**, **no banking/Play Integrity breakage**.
@@ -91,14 +91,15 @@ The repository also ships with the actual backup snapshot from the author's devi
 
 A stock POCO F7 ships with ~405 system packages. Many are useful, but a meaningful subset is:
 
-1. **Ad/telemetry SDKs** that run constantly in the background and phone home (Xiaomi MSA, Joyose, analytics, bugreport)
+1. **Ad/telemetry SDKs** that run constantly in the background and phone home (Xiaomi MSA, Joyose, analytics, bugreport, MiSightService)
 2. **Duplicate Xiaomi apps** you've already replaced with better alternatives (Mi Browser, Mi Music, Mi Video, YellowPage, TouchAssistant, etc.)
 3. **Meta background services** that track you even when you're not using Facebook (`com.facebook.system`, `services`, `appmanager`)
 4. **Microsoft Link to Windows** services that run whether or not you use Phone Link on a PC
 5. **Xiaomi's app recommendation engine** (GetApps / `mipicks` / `discover`) which pushes junk app installs in the background
+6. **Google + Xiaomi extra bloat** (Google Duo/Meet, YouTube Music system app, Digital Wellbeing, Xiaomi barrage) that waste RAM or have better replacements
 
 Removing these:
-- Cuts background CPU/RAM usage
+- Cuts background CPU/RAM usage (~500 MB+ RAM savings total)
 - Stops most Xiaomi + Meta telemetry
 - Prevents GetApps from auto-installing junk
 - Frees storage (small) and RAM (noticeable)
@@ -147,10 +148,10 @@ This is the safest possible debloat method. The riskier alternatives (root + `/s
 ├── README.md                           # This file
 └── backup/                             # Snapshot of the author's debloat session
     ├── build_info.txt                  # ROM fingerprint, HyperOS version, security patch
-    ├── removed_packages.txt            # The removal log (21 packages, batched + dated)
+    ├── removed_packages.txt            # The removal log (26 packages, batched + dated)
     ├── removed_diff.txt                # Auto-generated diff confirming what was removed
     ├── system_packages_before.txt      # 405 system packages before debloat
-    ├── system_packages_after.txt       # 386 system packages after debloat
+    ├── system_packages_after.txt       # 379 system packages after debloat
     ├── enabled_packages_before.txt     # 547 user-0 packages before
     ├── enabled_packages_after.txt      # 532 user-0 packages after
     ├── disabled_packages_before.txt    # Pre-existing disabled packages (4)
@@ -302,7 +303,7 @@ bash debloat.sh --list
 # 4. Run interactively (prompts y/N before each batch)
 bash debloat.sh
 
-# Or run non-interactively (removes all 5 batches)
+# Or run non-interactively (removes all 6 batches)
 bash debloat.sh --yes
 
 # Or run a single batch only
@@ -368,6 +369,16 @@ bash restore.sh --batch 1
 |---|---|---|
 | `com.mi.appfinder` | App drawer search bar (~298 MB RAM) | Spyware-ish; indexes app usage |
 | `com.mi.globalminusscreen` | Leftmost "minus screen" with news/ads (~255 MB RAM) | Ad surface; rarely used |
+
+### Batch 6 - Google + Xiaomi extra bloat (5 packages)
+
+| Package | What it is | Why remove |
+|---|---|---|
+| `com.google.android.apps.tachyon` | Google Duo/Meet (83 MB RAM running) | Replaced by WhatsApp/Discord for video calls |
+| `com.google.android.apps.youtube.music` | YouTube Music system app | Replaced by ReVanced YouTube Music |
+| `com.google.android.apps.wellbeing` | Digital Wellbeing (37 MB RAM running) | Screen time tracker; not used |
+| `com.miui.misightservice` | Xiaomi insights/telemetry (10 MB RAM running) | Same telemetry category as Joyose (Batch 1) |
+| `com.xiaomi.barrage` | Xiaomi bullet comments (danmaku overlay) | Chinese-market feature; useless outside China |
 
 ---
 
@@ -618,7 +629,7 @@ A: No. The package names (`com.miui.*`, `com.xiaomi.*`) are Xiaomi-specific. Sam
 A: No. This is the whole point - it works on a fully stock, locked device.
 
 **Q: How much RAM/storage does this free?**
-A: RAM: ~500 MB - 1 GB depending on what was running. Storage: minimal (~50-100 MB), because the APKs stay on `/system`. The main benefit is reduced background CPU/battery drain and privacy, not storage.
+A: RAM: ~600 MB - 1.2 GB depending on what was running (Batch 6 alone frees ~130 MB from running processes). Storage: minimal (~50-100 MB), because the APKs stay on `/system`. The main benefit is reduced background CPU/battery drain and privacy, not storage.
 
 **Q: Will GetApps come back?**
 A: After a major HyperOS OTA, possibly yes. Re-run `debloat.sh --yes` to re-remove. This is why the script is idempotent.
