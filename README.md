@@ -60,6 +60,10 @@ curl -fsSL https://raw.githubusercontent.com/9M2PJU/9M2PJU-POCO-F7-Debloat-Scrip
 - [What is NOT removed (and why)](#what-is-not-removed-and-why)
 - [HyperOS-specific notes](#hyperos-specific-notes)
 - [Performance optimizations applied](#performance-optimizations-applied)
+  - [Animation speed-up (0.5x)](#animation-speed-up-05x)
+  - [Bluetooth off (if unused)](#bluetooth-off-if-unused)
+  - [Encrypted private DNS (Cloudflare)](#encrypted-private-dns-cloudflare)
+  - [Memory Extension - disable it (12 GB RAM variant)](#memory-extension---disable-it-12-gb-ram-variant)
 - [Battery health notes](#battery-health-notes)
 - [Troubleshooting](#troubleshooting)
 - [FAQ](#faq)
@@ -88,7 +92,7 @@ The repository also ships with the actual backup snapshot from the author's devi
 A stock POCO F7 ships with ~405 system packages. Many are useful, but a meaningful subset is:
 
 1. **Ad/telemetry SDKs** that run constantly in the background and phone home (Xiaomi MSA, Joyose, analytics, bugreport)
-2. **Duplicate Xiaomi apps** you've already replaced with better alternatives (Mi Browser, Mi Music, Mi Video, YellowPage, TouchAssistant, …)
+2. **Duplicate Xiaomi apps** you've already replaced with better alternatives (Mi Browser, Mi Music, Mi Video, YellowPage, TouchAssistant, etc.)
 3. **Meta background services** that track you even when you're not using Facebook (`com.facebook.system`, `services`, `appmanager`)
 4. **Microsoft Link to Windows** services that run whether or not you use Phone Link on a PC
 5. **Xiaomi's app recommendation engine** (GetApps / `mipicks` / `discover`) which pushes junk app installs in the background
@@ -493,6 +497,44 @@ security.cloudflare-dns.com
 
 System-wide encrypted DNS via Cloudflare's 1.1.1.1 resolver. Free, fast, privacy-respecting (no IP logging). Pairs well with the MSA removal for privacy.
 
+### Memory Extension - disable it (12 GB RAM variant)
+
+HyperOS "Memory Extension" (Settings → Additional settings → Memory Extension) is a hybrid swap system with two layers:
+
+1. **ZRAM** (always on, kernel-level) - compresses cold RAM pages in-place. On the POCO F7 it uses ~800 MB of physical RAM to hold ~2.6 GB of compressed data at a ~3.3x ratio. This is **good** - effectively free extra RAM at RAM speed.
+2. **Storage-backed swap** (the toggle) - uses a file on UFS 4.1 storage as additional swap. This is the **slow** layer: ~10-50x slower than RAM when touched.
+
+On the 12 GB RAM variant, the storage-backed layer is essentially unused (only ~2.6 GB of swap is actually in use, all in ZRAM). Disabling it:
+
+- Removes the slow storage-swap layer (no more micro-stutters from page-in stalls)
+- Reduces UFS write wear (random small IOs are the worst for flash)
+- Keeps ZRAM (the fast, beneficial layer) - you don't lose the compression benefit
+- Frees whatever the swap file was reserving on storage (usually 4-8 GB)
+
+**Recommendation for 12 GB RAM variant: disable.** You have plenty of RAM (typically 7+ GB free) and will essentially never hit the 12 GB ceiling with normal usage. ZRAM stays on and gives you the real benefit.
+
+**When to keep it ON instead:**
+- You play heavy 3D games (Genshin, CoD Mobile at max) AND keep many apps in background
+- You regularly see "apps reloading" when switching between them
+- You have the 8 GB RAM variant (you actually need it then)
+
+**How to disable:**
+Settings → Additional settings → Memory Extension → toggle OFF → reboot
+
+After reboot, verify ZRAM-only swap is active:
+```bash
+adb shell "cat /proc/meminfo | grep -E 'SwapTotal|SwapFree'"
+# SwapTotal should drop from ~12.5 GB to ~4-6 GB (ZRAM-only)
+```
+
+**What to expect after disabling:**
+- Day-to-day: no noticeable change (you have plenty of RAM)
+- Heavy multitasking: apps may reload slightly more often instead of resuming from storage swap (rare with 12 GB)
+- Gaming: same or slightly better (no storage-swap stalls)
+- Battery: negligible change
+- Storage: get back 4-8 GB
+- UFS lifespan: slightly improved (less random write wear)
+
 ---
 
 ## Battery health notes
@@ -505,14 +547,14 @@ Last learned battery capacity: 6209 mAh   (BMS-measured)
 Retention:                     95.5%      (after ~8.9 months)
 ```
 
-**95.5% is normal and healthy.** A brand-new POCO F7 typically shows 97–99% out of the box due to:
+**95.5% is normal and healthy.** A brand-new POCO F7 typically shows 97-99% out of the box due to:
 1. Factory cell variance (design spec is the *minimum* rated capacity)
 2. BMS safety margins (the BMS reports usable capacity, not raw chemical capacity)
 3. Normal chemical aging (~0.5%/month is typical for Li-poly)
 
 Tips to slow future degradation:
 - Enable HyperOS charging optimization (Settings → Battery → hold at 80% overnight)
-- Avoid deep discharges (keep it in 30–80% range)
+- Avoid deep discharges (keep it in 30-80% range)
 - Avoid hot fast-charging sessions (use a slower charger overnight)
 - Don't worry about "training" the battery - that's outdated advice for NiMH, not Li-poly
 
@@ -627,6 +669,6 @@ In short: you can use, modify, and distribute this project, including commercial
 
 If this script saved you time, consider buying me a coffee:
 
-<a href="https://www.buymeacoffee.com/9m2pju"><img src="https://img.buymeacoffee.com/button-api/?text=Buy me a coffee&emoji=&slug=9m2pju&button_colour=FFDD00&font_colour=000000&font_family=Inter&outline_colour=000000&coffee_colour=ffffff" alt="Buy me a coffee" width="180"></a>
+[![Buy me a coffee](https://cdn.buymeacoffee.com/buttons/default-orange.png)](https://www.buymeacoffee.com/9m2pju)
 
 Or use the **Sponsor** button at the top of this repo on GitHub.
