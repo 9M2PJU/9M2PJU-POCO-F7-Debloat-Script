@@ -450,30 +450,42 @@ bash debloat.sh --batch 1
 
 ### What the interactive mode looks like
 
-When you run `bash debloat.sh` (without `--yes`), it walks you through each package one by one:
+When you run `bash debloat.sh` (without `--yes`), it walks you through each package one by one, showing a card with context and numbered options:
 
 ```
 === Batch 1: Ad/telemetry (4 packages) ===
 
-For each package, you'll see what it is and why it's being removed.
-Answer y to remove, n to keep, s to skip the rest of this batch.
+For each package, you'll see what it is, why it's being removed, and
+current RAM usage. Then choose: 1 (remove), 2 (keep), or 3 (skip batch).
 
   Package:  com.miui.msa.global
   What:     Xiaomi Ad SDK (MSA)
   Why:      Pushes ads in Notifications, GetApps, Settings. Single biggest privacy win.
-  Remove this package? [y/N/s] y
+
+  1) Remove
+  2) Keep
+  3) Skip rest of this batch
+  Choose [1-3] (default 2): 1
   OK    com.miui.msa.global
 
   Package:  com.xiaomi.joyose
   What:     Telemetry + Game Turbo backend
   Why:      Stops Xiaomi usage analytics. Disables Game Turbo advanced features.
-  Remove this package? [y/N/s] n
+
+  1) Remove
+  2) Keep
+  3) Skip rest of this batch
+  Choose [1-3] (default 2): 2
   Kept: com.xiaomi.joyose
 
   Package:  com.miui.analytics
   What:     Usage analytics
   Why:      Stops usage pattern reporting to Xiaomi.
-  Remove this package? [y/N/s] s
+
+  1) Remove
+  2) Keep
+  3) Skip rest of this batch
+  Choose [1-3] (default 2): 3
   Skipping rest of batch 1.
 
 Batch 1 partially done. Removed 1 package(s).
@@ -486,11 +498,11 @@ For each package, you see:
 - **Now**: current RAM usage if the package is running (e.g. "83 MB RAM")
 
 Then you choose:
-- **y** - remove this package
-- **n** (or Enter) - keep this package
-- **s** - skip the rest of this batch
+- **1** - remove this package (label shows RAM savings if running, e.g. "Remove (frees 83 MB RAM)")
+- **2** (or Enter) - keep this package
+- **3** - skip the rest of this batch
 
-This lets you make an informed decision on each package, just like a guided debloat. If you just want everything removed without prompting, use `--yes`.
+The option labels include context (like RAM savings) so you can decide at a glance. This lets you make an informed decision on each package, just like a guided debloat. If you just want everything removed without prompting, use `--yes`.
 
 After each batch, **test the phone** (unlock, open Settings, open the launcher, take a screenshot, reboot once). If anything breaks, restore that batch:
 
@@ -605,22 +617,30 @@ Restore uses `pm install-existing --user 0`, which re-registers the app from the
 
 ### What the interactive restore looks like
 
-When you run `bash restore.sh` (without `--yes`), it walks you through each removed package one by one:
+When you run `bash restore.sh` (without `--yes`), it walks you through each removed package one by one, showing a card with context and numbered options:
 
 ```
   Package:  com.miui.msa.global
   What:     Xiaomi Ad SDK (MSA)
   History:  Was removed: pushes ads in Notifications, GetApps, Settings.
   Status:    currently removed
-  Restore this package? [y/N/s] y
+
+  1) Restore
+  2) Keep removed
+  3) Skip rest of the restore list
+  Choose [1-3] (default 2): 1
   OK    com.miui.msa.global
 
   Package:  com.xiaomi.joyose
   What:     Telemetry + Game Turbo backend
   History:  Was removed: Xiaomi usage analytics. Note: restoring re-enables Game Turbo.
   Status:    currently removed
-  Restore this package? [y/N/s] n
-  Skipped: com.xiaomi.joyose
+
+  1) Restore
+  2) Keep removed
+  3) Skip rest of the restore list
+  Choose [1-3] (default 2): 2
+  Kept removed: com.xiaomi.joyose
 ```
 
 For each package, you see:
@@ -630,9 +650,9 @@ For each package, you see:
 - **Status**: whether it's currently installed or removed
 
 Then you choose:
-- **y** - restore this package
-- **n** (or Enter) - skip this package (keep it removed)
-- **s** - skip the rest of the restore list
+- **1** - restore this package (label shows "already installed - will skip" if applicable)
+- **2** (or Enter) - keep it removed
+- **3** - skip the rest of the restore list
 
 This lets you selectively restore only what you actually want back, with full context on what each package is and why it was removed.
 

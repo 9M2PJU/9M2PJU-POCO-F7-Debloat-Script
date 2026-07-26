@@ -103,18 +103,18 @@ remove_pkg() {
 
 # ---------- Display a package card ----------
 # Format: "pkg|description|why_remove"
+# Sets CARD_RAM global with RAM usage string (or empty) for option labels
 show_pkg_card() {
   local entry="$1"
   local pkg desc why
   IFS='|' read -r pkg desc why <<< "$entry"
-  local ram
-  ram=$(get_ram_usage "$pkg")
+  CARD_RAM=$(get_ram_usage "$pkg")
   echo ""
   echo "  ${C_BOLD}Package:${C_RESET}  $pkg"
   echo "  ${C_BOLD}What:${C_RESET}     $desc"
   echo "  ${C_BOLD}Why:${C_RESET}      $why"
-  if [ -n "$ram" ]; then
-    echo "  ${C_BOLD}Now:${C_RESET}      ${C_YELLOW}${ram}${C_RESET}"
+  if [ -n "$CARD_RAM" ]; then
+    echo "  ${C_BOLD}Now:${C_RESET}      ${C_YELLOW}${CARD_RAM}${C_RESET}"
   fi
 }
 
@@ -138,8 +138,8 @@ run_batch() {
 
   if [ "$INTERACTIVE" = "1" ]; then
     echo ""
-    echo "${C_DIM}For each package, you'll see what it is and why it's being removed."
-    echo "Answer y to remove, n to keep, s to skip the rest of this batch.${C_RESET}"
+    echo "${C_DIM}For each package, you'll see what it is, why it's being removed, and"
+    echo "current RAM usage. Then choose: 1 (remove), 2 (keep), or 3 (skip batch).${C_RESET}"
   fi
 
   local removed=()
@@ -150,27 +150,36 @@ run_batch() {
 
     if [ "$INTERACTIVE" = "1" ]; then
       show_pkg_card "$e"
+      # Build option labels with context (like a guided question)
+      local opt1_label="Remove"
+      if [ -n "${CARD_RAM:-}" ]; then
+        opt1_label="Remove (frees ${CARD_RAM})"
+      fi
+      echo ""
+      echo "  ${C_BOLD}1)${C_RESET} ${opt1_label}"
+      echo "  ${C_BOLD}2)${C_RESET} Keep"
+      echo "  ${C_BOLD}3)${C_RESET} Skip rest of this batch"
       while true; do
-        printf "  ${C_BOLD}Remove this package? [y/N/s]${C_RESET} "
+        printf "  ${C_BOLD}Choose [1-3] (default 2):${C_RESET} "
         read -r ans
         case "$ans" in
-          y|Y|yes|YES)
+          1|remove|Remove|REMOVE)
             remove_pkg "$pkg"
             rc=$?
             if [ "$rc" = "0" ]; then removed+=("$pkg"); fi
             break
             ;;
-          s|S|skip|SKIP)
+          3|skip|Skip|SKIP|s|S)
             echo "  ${C_DIM}Skipping rest of batch $num.${C_RESET}"
             skipped=1
             break 2
             ;;
-          n|N|no|NO|"")
+          2|keep|Keep|KEEP|n|N|no|NO|"")
             echo "  ${C_DIM}Kept: $pkg${C_RESET}"
             break
             ;;
           *)
-            echo "  ${C_DIM}Please answer y (yes), n (no), or s (skip rest of batch).${C_RESET}"
+            echo "  ${C_DIM}Please choose 1 (remove), 2 (keep), or 3 (skip rest of batch).${C_RESET}"
             ;;
         esac
       done
@@ -286,7 +295,7 @@ if [ "$INTERACTIVE" = "1" ] && [ "$LIST_ONLY" = "0" ]; then
   echo "  - What it is"
   echo "  - Why it's being removed"
   echo "  - Current RAM usage (if running)"
-  echo "Then you decide: y (remove), n (keep), or s (skip rest of batch)."
+  echo "Then you choose: 1 (remove), 2 (keep), or 3 (skip rest of batch)."
   echo ""
   echo "Everything is reversible - run restore.sh to undo any removal.${C_RESET}"
   echo ""

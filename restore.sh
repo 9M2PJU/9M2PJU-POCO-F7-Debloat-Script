@@ -130,13 +130,16 @@ restore_one() {
 }
 
 # ---------- Display a package card ----------
+# Sets CARD_INSTALLED global (1=installed, 0=removed) for option labels
 show_pkg_card() {
   local pkg="$1"
   lookup_meta "$pkg"
   local status
   if is_installed "$pkg"; then
+    CARD_INSTALLED=1
     status="${C_GREEN}currently installed${C_RESET}"
   else
+    CARD_INSTALLED=0
     status="${C_YELLOW}currently removed${C_RESET}"
   fi
   echo ""
@@ -227,7 +230,7 @@ if [ "$INTERACTIVE" = "1" ]; then
   echo "${C_DIM}This script will walk you through each package one by one."
   echo "For each package, you'll see what it is, why it was removed, and"
   echo "its current status (installed or removed)."
-  echo "Then you decide: y (restore), n (skip), or s (skip rest).${C_RESET}"
+  echo "Then you choose: 1 (restore), 2 (keep removed), or 3 (skip rest).${C_RESET}"
   echo ""
 fi
 
@@ -238,11 +241,20 @@ for p in "${TARGETS[@]}"; do
 
   if [ "$INTERACTIVE" = "1" ]; then
     show_pkg_card "$p"
+    # Build option labels with context (like a guided question)
+    opt1_label="Restore"
+    if [ "${CARD_INSTALLED:-0}" = "1" ]; then
+      opt1_label="Restore (already installed - will skip)"
+    fi
+    echo ""
+    echo "  ${C_BOLD}1)${C_RESET} ${opt1_label}"
+    echo "  ${C_BOLD}2)${C_RESET} Keep removed"
+    echo "  ${C_BOLD}3)${C_RESET} Skip rest of the restore list"
     while true; do
-      printf "  ${C_BOLD}Restore this package? [y/N/s]${C_RESET} "
+      printf "  ${C_BOLD}Choose [1-3] (default 2):${C_RESET} "
       read -r ans
       case "$ans" in
-        y|Y|yes|YES)
+        1|restore|Restore|RESTORE|y|Y|yes|YES)
           restore_one "$p"
           rc=$?
           case "$rc" in
@@ -252,17 +264,17 @@ for p in "${TARGETS[@]}"; do
           esac
           break
           ;;
-        s|S|skip|SKIP)
+        3|skip|Skip|SKIP|s|S)
           echo "  ${C_DIM}Skipping rest of the restore list.${C_RESET}"
           break 2
           ;;
-        n|N|no|NO|"")
-          echo "  ${C_DIM}Skipped: $p${C_RESET}"
+        2|keep|Keep|KEEP|n|N|no|NO|"")
+          echo "  ${C_DIM}Kept removed: $p${C_RESET}"
           kept=$((kept+1))
           break
           ;;
         *)
-          echo "  ${C_DIM}Please answer y (yes), n (no), or s (skip rest).${C_RESET}"
+          echo "  ${C_DIM}Please choose 1 (restore), 2 (keep removed), or 3 (skip rest).${C_RESET}"
           ;;
       esac
     done
