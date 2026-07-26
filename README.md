@@ -479,14 +479,19 @@ adb shell svc bluetooth disable
 
 Saves a small amount of battery. Re-enable with `svc bluetooth enable` or the Quick Settings toggle.
 
-### Encrypted private DNS (NextDNS)
+### Encrypted private DNS (Cloudflare)
 
 Set in Settings → Private DNS → "Custom provider hostname":
 ```
-e5872a.dns.nextdns.io
+dns.cloudflare.com
 ```
 
-System-wide encrypted DNS, blocks ads/trackers at the DNS level. Pairs well with the MSA removal for privacy.
+Or use the DNS-over-HTTPS hostname for stricter malware blocking:
+```
+security.cloudflare-dns.com
+```
+
+System-wide encrypted DNS via Cloudflare's 1.1.1.1 resolver. Free, fast, privacy-respecting (no IP logging). Pairs well with the MSA removal for privacy.
 
 ---
 
