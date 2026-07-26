@@ -44,6 +44,7 @@ curl -fsSL https://raw.githubusercontent.com/9M2PJU/9M2PJU-POCO-F7-Debloat-Scrip
 - [One-liner (the fast way)](#one-liner-the-fast-way)
 - [What this project does](#what-this-project-does)
 - [Why debloat?](#why-debloat)
+- [Author's device - real-world results](#authors-device---real-world-results)
 - [How it works (the science)](#how-it-works-the-science)
 - [Repository structure](#repository-structure)
 - [Requirements](#requirements)
@@ -105,6 +106,126 @@ Removing these:
 - Frees storage (small) and RAM (noticeable)
 - Improves battery life (modestly)
 - Reduces ad surface area in Notification shade, Settings, and the launcher
+
+---
+
+## Author's device - real-world results
+
+This section shows what the debloat actually achieved on the author's POCO F7, so you can see concrete numbers rather than vague claims.
+
+### The device
+
+| Spec | Value |
+|---|---|
+| Phone | POCO F7 |
+| Model | 25053PC47G |
+| Codename | `onyx_global` |
+| ROM | `OS3.0.302.0.WOLMIXM` (HyperOS 2 V816) |
+| Android | 16 |
+| Security patch | 2026-05-01 |
+| Chipset | Qualcomm Snapdragon 8s Gen 4 (SM8735, 4nm) |
+| GPU | Adreno 825 |
+| RAM | 12 GB (11.5 GB usable) |
+| Storage | 512 GB UFS 4.1 (84 GB used, 394 GB free) |
+| Battery | 6500 mAh design, 6209 mAh learned (95.5% health) |
+| Activated | 2025-10-31 |
+
+### Stock vs after debloat - the numbers
+
+| Metric | Stock (out of the box) | After all 6 batches | Difference |
+|---|---|---|---|
+| System packages (user 0) | 405 | **379** | -26 packages |
+| Background telemetry SDKs | 4 (MSA, Joyose, analytics, bugreport) + MiSightService | **0** | -5 telemetry services |
+| Ad surfaces | Notifications, GetApps, Settings, minus screen, app drawer search | **None** | All ad surfaces removed |
+| Meta background tracking | 3 services running constantly | **0** | -3 tracking services |
+| Microsoft Link to Windows | 3 services running | **0** | -3 unused services |
+| Google bloat (Duo/Meet, YT Music, Wellbeing) | 3 apps (~120 MB RAM when running) | **0** | -120 MB RAM |
+| Xiaomi duplicate apps | 9 (browser, music, video, etc.) | **0** | -9 duplicates |
+| Free RAM (typical) | ~5.5 GB | **~5.4 GB** | Similar, but no bloat eating it |
+| Used RAM (pss) | ~5.0 GB | **~4.9 GB** | ~100-150 MB less used by bloat |
+| Ads in Notification shade | Yes (MSA pushes them) | **No** | Eliminated |
+| GetApps auto-installing junk | Yes (in background) | **No** | Eliminated |
+| Telemetry phoning home | Xiaomi + Meta + Microsoft | **Xiaomi core only** | Most telemetry stopped |
+
+### What was removed (26 packages across 6 batches)
+
+**Batch 1 - Ad/telemetry (4):** MSA (Xiaomi Ad SDK), Joyose, analytics, bugreport
+**Batch 2 - Xiaomi duplicate apps (9):** Mi Browser, Mi Music, Mi Video, YellowPage, TouchAssistant, ThirdAppAssistant, SecurityAdd, GetApps, Discover
+**Batch 3 - Meta services (3):** Facebook system, services, appmanager
+**Batch 4 - Microsoft Link to Windows (3):** appmanager, deviceintegrationservice, crossdeviceservicebroker
+**Batch 5 - Xiaomi app drawer + minus screen (2):** appfinder, globalminusscreen
+**Batch 6 - Google + Xiaomi extra (5):** Duo/Meet, YouTube Music, Digital Wellbeing, MiSightService, Barrage
+
+### What was deliberately KEPT (and why)
+
+The author reviewed every remaining suspicious package and chose to keep these based on actual usage:
+
+| Package | Why kept |
+|---|---|
+| `com.google.android.apps.bard` (Gemini) | Used for AI assistance |
+| `com.google.android.apps.subscriptions.red` (Google One) | Active subscription |
+| `com.google.android.videos` (Google TV) | Used for movie rentals |
+| `com.google.android.apps.docs` (Docs/Drive) | Used for document viewing |
+| `com.google.android.apps.safetyhub` | Emergency alerts feature wanted |
+| `com.xiaomi.aiservice` / `aiasst.vision` / `aicr` | Xiaomi AI features (Super Wallpaper, screen recognition, voice) |
+| `com.xiaomi.mi_connect_service` (40 MB RAM) | File sharing with other Xiaomi devices |
+| `com.mi.healthglobal` (Mi Health) | Health tracking |
+| `com.miui.cleaner` (Mi Cleaner) | Storage management |
+| `com.xiaomi.payment` (Xiaomi Pay) | Payment feature kept as backup |
+| `com.xiaomi.glgm` (Game Turbo) | Performance optimization for games |
+| `com.xiaomi.hypercomm` | HyperOS cross-device features |
+| `com.xiaomi.cameramind` / `cameratools` | Camera AI scene detection + tools |
+| `com.milink.service` | Related to Mi Connect (kept) |
+| `com.miuix.editor` (Mi Video Editor) | Video editing |
+| `com.miui.extraphoto` | Photo effects/filters |
+| `com.xiaomi.mtb` / `ugd` | Unknown purpose - kept for safety |
+
+### The concrete advantages after debloat
+
+**1. No more ads in the OS**
+The biggest win. Stock HyperOS shows ads in the Notification shade, Settings app, GetApps, and the minus screen. After removing MSA, GetApps, Discover, appfinder, and globalminusscreen, the OS is ad-free. This is the single most noticeable difference.
+
+**2. No background telemetry phoning home**
+Stock: MSA, Joyose, analytics, bugreport, and MiSightService all run constantly and report usage data to Xiaomi. Meta's 3 services track you even when you're not using Facebook. Microsoft's 3 services phone home for Phone Link whether you use it or not.
+After: All of these are gone. The only telemetry remaining is Xiaomi's core system services (which can't be removed without breaking the OS).
+
+**3. No GetApps auto-installing junk**
+Stock: GetApps (`com.xiaomi.mipicks`) silently installs "recommended" apps in the background. This is why you'd find random games or utilities you never installed.
+After: GetApps is gone. Nothing auto-installs anymore.
+
+**4. ~130 MB RAM freed from running processes (Batch 6 alone)**
+- Google Duo/Meet: 83 MB (was running)
+- Digital Wellbeing: 37 MB (was running)
+- MiSightService: 10 MB (was running)
+Plus the idle packages (YT Music, Barrage) and all of Batches 1-5 freed RAM when they were running.
+
+**5. Cleaner app drawer**
+Stock: The app drawer has a search bar (appfinder) that indexes your app usage and a leftmost "minus screen" with news and ads.
+After: Both gone. The app drawer is just your apps, nothing else.
+
+**6. No duplicate apps**
+Stock: Mi Browser, Mi Music, Mi Video, YellowPage, TouchAssistant, ThirdAppAssistant, SecurityAdd - all duplicates of better apps you already use.
+After: All gone. No more scrolling past apps you never open.
+
+**7. Privacy from Meta**
+Stock: Even if you never sign into Facebook, the 3 Meta background services (`com.facebook.system`, `services`, `appmanager`) run constantly and can track location, app usage, and other data.
+After: All 3 removed. The Facebook app itself (`com.facebook.katana`) still works if you want it - the removed services were optional helpers, not required dependencies.
+
+**8. No Microsoft Phone Link running unnecessarily**
+Stock: 3 Microsoft services run whether or not you use Phone Link on a Windows PC.
+After: All 3 removed. Word (`com.microsoft.office.word`) is kept and still works.
+
+**9. Reversible - no risk**
+Every removal is logged in `backup/removed_packages.txt`. Run `bash restore.sh` to interactively bring back any package, or `bash restore.sh --yes` to restore everything. A factory reset also restores all system apps instantly.
+
+### What did NOT change
+
+- **Banking apps still work** - Play Integrity / SafetyNet pass (system partition untouched, bootloader locked)
+- **OTA updates still work** - system updates install normally (some removed apps may come back after major OTA - re-run `debloat.sh --yes`)
+- **Warranty intact** - Xiaomi service centers don't check user-profile package state
+- **No root, no bootloader unlock** - the phone is fully stock, just with fewer user-profile packages
+- **Phone performance** - unchanged or slightly better (less background CPU usage from telemetry)
+- **Battery life** - modestly improved (less background CPU/wakeups from telemetry and ad SDKs)
 
 ---
 
