@@ -1,0 +1,16 @@
+=== Build fingerprint ===
+POCO/onyx_global/onyx:16/BP2A.250605.031.A3/OS3.0.302.0.WOLMIXM:user/release-keys
+=== Product ===
+onyx_global
+=== Model ===
+25053PC47G
+=== MIUI/HyperOS version ===
+V816
+=== Serial ===
+db80429a
+=== Android version ===
+16
+=== Security patch ===
+2026-05-01
+=== Build date ===
+Tue May 26 17:18:39 CST 2026

@@ -1,0 +1,24 @@
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+
+# Local-only backups (uncomment if you don't want to commit your own snapshots)
+# backup/system_packages_before.txt
+# backup/system_packages_after.txt
+# backup/enabled_packages_before.txt
+# backup/enabled_packages_after.txt
+# backup/disabled_packages_before.txt
+# backup/uninstalled_packages_before.txt
+# backup/third_party_packages_before.txt
+# backup/removed_diff.txt
+
+# Never commit these (just in case)
+*.log
+*.bak
+*.tmp
+.env

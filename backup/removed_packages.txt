@@ -1,0 +1,42 @@
+# Packages removed from POCO F7 (onyx_global) via debloat.
+# Format: one package name per line. Lines starting with '#' are comments.
+# Restore with: bash /home/x/pocof7/backup/restore_all.sh
+#
+# Build at time of backup:
+#   POCO/onyx_global/onyx:16/BP2A.250605.031.A3/OS3.0.302.0.WOLMIXM:user/release-keys
+#   HyperOS V816, Android 16, security patch 2026-05-01
+#
+# (empty for now — packages will be appended as they are removed)
+
+# Batch 1 — Ad/telemetry (removed 2026-07-26)
+com.miui.msa.global
+com.xiaomi.joyose
+com.miui.analytics
+com.miui.bugreport
+
+# Batch 2 — Xiaomi duplicate apps (removed 2026-07-26)
+com.mi.globalbrowser
+com.miui.player
+com.miui.videoplayer
+com.miui.yellowpage
+com.miui.touchassistant
+com.miui.thirdappassistant
+com.miui.securityadd
+com.xiaomi.mipicks
+com.xiaomi.discover
+
+# Batch 3 — Meta background services (removed 2026-07-26)
+# NOTE: com.facebook.katana (the FB app itself) is intentionally NOT removed.
+com.facebook.system
+com.facebook.services
+com.facebook.appmanager
+
+# Batch 4 — Microsoft Link to Windows bloat (removed 2026-07-26)
+# NOTE: com.microsoft.office.word (user app) is intentionally NOT removed.
+com.microsoft.appmanager
+com.microsoft.deviceintegrationservice
+com.microsoftsdk.crossdeviceservicebroker
+
+# Batch 5 — Xiaomi app drawer search + minus screen (removed 2026-07-26)
+com.mi.appfinder
+com.mi.globalminusscreen
