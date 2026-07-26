@@ -7,6 +7,9 @@ Thumbs.db
 .idea/
 .vscode/
 
+# Local-only agent notes - never push to GitHub
+AGENTS.md
+
 # Local-only backups (uncomment if you don't want to commit your own snapshots)
 # backup/system_packages_before.txt
 # backup/system_packages_after.txt

@@ -1,4 +1,4 @@
-# 9M2PJU — POCO F7 Debloat Script
+# 9M2PJU - POCO F7 Debloat Script
 
 A safe, reversible, no-root debloat toolkit for the **POCO F7 (codename `onyx_global`)** running HyperOS 2 / Android 16.
 
@@ -19,13 +19,13 @@ This downloads `debloat.sh` + `restore.sh` into the current directory and runs `
 ### One-liner variants
 
 ```bash
-# Preview only — show what would be removed, change nothing
+# Preview only - show what would be removed, change nothing
 curl -fsSL https://raw.githubusercontent.com/9M2PJU/9M2PJU-POCO-F7-Debloat-Script/main/install.sh | bash -s -- --list
 
 # Download only, don't run yet (review the scripts first)
 curl -fsSL https://raw.githubusercontent.com/9M2PJU/9M2PJU-POCO-F7-Debloat-Script/main/install.sh | bash -s -- --no-run
 
-# Non-interactive — remove all 5 batches without prompting
+# Non-interactive - remove all 5 batches without prompting
 curl -fsSL https://raw.githubusercontent.com/9M2PJU/9M2PJU-POCO-F7-Debloat-Script/main/install.sh | bash -s -- --yes
 
 # Run only a specific batch (1-5)
@@ -67,7 +67,7 @@ Three bash scripts that talk to your POCO F7 over `adb`:
 
 | Script | Purpose |
 |---|---|
-| `install.sh` | One-liner installer — downloads `debloat.sh` + `restore.sh` from GitHub and runs debloat interactively |
+| `install.sh` | One-liner installer - downloads `debloat.sh` + `restore.sh` from GitHub and runs debloat interactively |
 | `debloat.sh` | Removes 21 known-safe bloat packages in 5 small batches, with interactive prompts and a dry-run mode |
 | `restore.sh` | Restores any removed package instantly from the untouched `/system` partition (no internet needed) |
 
@@ -121,7 +121,7 @@ The crucial detail: **the APK on the read-only `/system` partition is never touc
 - ✅ Banking apps / Play Integrity / SafetyNet keep working
 - ✅ Warranty is unaffected (Xiaomi service centers don't check this)
 - ✅ A factory reset restores every removed app instantly
-- ✅ `pm install-existing --user 0 <pkg>` re-registers the app from `/system` — **no internet needed, instant**
+- ✅ `pm install-existing --user 0 <pkg>` re-registers the app from `/system` - **no internet needed, instant**
 
 This is the safest possible debloat method. The riskier alternatives (root + `/system` deletion, Magisk module hides, bootloader unlock + custom ROM) are not used here.
 
@@ -149,20 +149,20 @@ This is the safest possible debloat method. The riskier alternatives (root + `/s
     └── restore_all.sh                  # Legacy one-shot restore (use restore.sh instead)
 ```
 
-The `backup/` folder is committed so others can see exactly what was removed on a real device. You do **not** need to keep this folder for your own debloat — `debloat.sh` will create it automatically.
+The `backup/` folder is committed so others can see exactly what was removed on a real device. You do **not** need to keep this folder for your own debloat - `debloat.sh` will create it automatically.
 
 ---
 
 ## Requirements
 
-- A POCO F7 (or any Xiaomi device running HyperOS 2 — package names may differ on other models)
+- A POCO F7 (or any Xiaomi device running HyperOS 2 - package names may differ on other models)
 - A computer with `adb` (Android Platform Tools) installed and in `PATH`
 - A USB cable (data-capable, not charge-only)
 - USB debugging enabled on the phone:
   1. Settings → About phone → tap "HyperOS version" / "MIUI version" 7 times to unlock Developer options
   2. Settings → Additional settings → Developer options → enable **USB debugging**
   3. Plug in the phone, accept the "Allow USB debugging?" prompt
-- Verify with `adb devices -l` — your phone should show as `device` (not `unauthorized`)
+- Verify with `adb devices -l` - your phone should show as `device` (not `unauthorized`)
 
 ---
 
@@ -199,16 +199,16 @@ bash restore.sh --batch 1
 
 ## The debloat batches explained
 
-### Batch 1 — Ad/telemetry (4 packages)
+### Batch 1 - Ad/telemetry (4 packages)
 
 | Package | What it is | Why remove |
 |---|---|---|
-| `com.miui.msa.global` | **Xiaomi Ad SDK** — pushes ads in Notifications, GetApps, Settings | Single biggest privacy win |
+| `com.miui.msa.global` | **Xiaomi Ad SDK** - pushes ads in Notifications, GetApps, Settings | Single biggest privacy win |
 | `com.xiaomi.joyose` | Telemetry + Game Turbo backend | Stops Xiaomi usage analytics; disables Game Turbo advanced features (acceptable trade-off if you don't game seriously) |
 | `com.miui.analytics` | Usage analytics | Stops usage pattern reporting |
 | `com.miui.bugreport` | Bug report uploader | Stops automatic bug report telemetry |
 
-### Batch 2 — Xiaomi duplicate apps (9 packages)
+### Batch 2 - Xiaomi duplicate apps (9 packages)
 
 | Package | What it is | Why remove |
 |---|---|---|
@@ -219,10 +219,10 @@ bash restore.sh --batch 1
 | `com.miui.touchassistant` | Floating ball assistant | Gimmick; uses RAM |
 | `com.miui.thirdappassistant` | Third-party app promo | Pushes app recommendations |
 | `com.miui.securityadd` | Security add-on module | Redundant with main Security Center |
-| `com.xiaomi.mipicks` | **GetApps** — Xiaomi's app store | Pushes junk app installs in background; major nuisance |
+| `com.xiaomi.mipicks` | **GetApps** - Xiaomi's app store | Pushes junk app installs in background; major nuisance |
 | `com.xiaomi.discover` | GetApps companion | Same as above |
 
-### Batch 3 — Meta background services (3 packages)
+### Batch 3 - Meta background services (3 packages)
 
 | Package | What it is | Why remove |
 |---|---|---|
@@ -230,9 +230,9 @@ bash restore.sh --batch 1
 | `com.facebook.services` | Meta app support service | Background helper |
 | `com.facebook.appmanager` | Meta app updater | Auto-updates FB apps; Play Store does this anyway |
 
-> **Note:** `com.facebook.katana` (the Facebook app itself) is intentionally **NOT** removed. The app still works without these three services — they're optional helpers, not required dependencies.
+> **Note:** `com.facebook.katana` (the Facebook app itself) is intentionally **NOT** removed. The app still works without these three services - they're optional helpers, not required dependencies.
 
-### Batch 4 — Microsoft Link to Windows (3 packages)
+### Batch 4 - Microsoft Link to Windows (3 packages)
 
 | Package | What it is | Why remove |
 |---|---|---|
@@ -242,7 +242,7 @@ bash restore.sh --batch 1
 
 > **Note:** `com.microsoft.office.word` (the Word user app) is intentionally **NOT** removed.
 
-### Batch 5 — Xiaomi app drawer search + minus screen (2 packages)
+### Batch 5 - Xiaomi app drawer search + minus screen (2 packages)
 
 | Package | What it is | Why remove |
 |---|---|---|
@@ -257,7 +257,7 @@ bash restore.sh --batch 1
 
 When `debloat.sh` runs, it creates a `backup/` folder (if missing) and writes:
 
-- `removed_packages.txt` — every removed package, grouped by batch with date headers
+- `removed_packages.txt` - every removed package, grouped by batch with date headers
 - (Optionally, you can pre-snapshot with `adb shell pm list packages -s > backup/system_packages_before.txt`)
 
 ### How to restore
@@ -279,7 +279,7 @@ bash restore.sh --batch 3
 bash restore.sh --list
 ```
 
-Restore uses `pm install-existing --user 0`, which re-registers the app from the **untouched `/system` APK** — instant, no internet required. If a package was disabled rather than uninstalled, the script falls back to `pm enable`.
+Restore uses `pm install-existing --user 0`, which re-registers the app from the **untouched `/system` APK** - instant, no internet required. If a package was disabled rather than uninstalled, the script falls back to `pm enable`.
 
 ### The nuclear undo
 
@@ -289,13 +289,13 @@ A factory reset (Settings → Additional settings → Back up and reset → Fact
 
 ## Safety guarantees
 
-1. **No root, no bootloader unlock** — works on a fully stock, locked device.
-2. **No banking/Play Integrity breakage** — SafetyNet / Play Integrity checks pass because the system partition is untouched and the bootloader is locked.
-3. **No warranty impact** — Xiaomi service centers do not check user-profile package state.
-4. **Fully reversible** — every removal is logged; `restore.sh` brings everything back in seconds.
-5. **Idempotent** — running `debloat.sh` twice is safe; already-removed packages are skipped.
-6. **No data loss** — the `-k` flag preserves app data, so a restore brings back the same state.
-7. **No bricking possible** — `pm uninstall --user 0` cannot bootloop a phone. The worst case is a disabled feature, which `restore.sh` fixes.
+1. **No root, no bootloader unlock** - works on a fully stock, locked device.
+2. **No banking/Play Integrity breakage** - SafetyNet / Play Integrity checks pass because the system partition is untouched and the bootloader is locked.
+3. **No warranty impact** - Xiaomi service centers do not check user-profile package state.
+4. **Fully reversible** - every removal is logged; `restore.sh` brings everything back in seconds.
+5. **Idempotent** - running `debloat.sh` twice is safe; already-removed packages are skipped.
+6. **No data loss** - the `-k` flag preserves app data, so a restore brings back the same state.
+7. **No bricking possible** - `pm uninstall --user 0` cannot bootloop a phone. The worst case is a disabled feature, which `restore.sh` fixes.
 
 ---
 
@@ -308,20 +308,20 @@ These packages are intentionally left alone because removing them causes bootloo
 | `com.android.systemui` | System UI (status bar, navigation, notifications) |
 | `com.android.settings` | Settings app |
 | `com.android.phone` | Telephony stack |
-| `com.android.providers.*` | Content providers — removing breaks everything |
+| `com.android.providers.*` | Content providers - removing breaks everything |
 | `com.miui.home` | Default launcher (keep as fallback even if using Nova) |
 | `com.xiaomi.finddevice` | Find My Phone |
 | `com.xiaomi.account` | Mi Account services |
-| `com.xiaomi.misettings` | Mi Settings panel — many HyperOS features depend on it |
+| `com.xiaomi.misettings` | Mi Settings panel - many HyperOS features depend on it |
 | `com.miui.securitycenter` | Main Security Center app |
-| `com.miui.daemon` | System daemon — **never touch** |
+| `com.miui.daemon` | System daemon - **never touch** |
 | `com.miui.miwallpaper` | Wallpaper engine (removing breaks AOD/lockscreen wallpaper) |
 | `com.miui.misound` | Audio settings (removing hides Dolby Atmos toggle) |
 | `com.miui.screenshot` | Screenshot tool (removing breaks 3-finger swipe) |
 | `com.miui.cloudservice` | Mi Cloud sync (only disable if you don't use Mi Cloud) |
 | `com.miui.backup` | Xiaomi backup tool (some HyperOS features depend on it) |
 | `com.miui.accessibility` | Accessibility framework |
-| `com.google.android.gms` | Google Play Services — removing breaks everything Google |
+| `com.google.android.gms` | Google Play Services - removing breaks everything Google |
 | `com.google.android.gsf` | Google Services Framework |
 | `com.android.vending` | Play Store |
 | `com.android.inputmethod.*` | Keyboard |
@@ -334,16 +334,16 @@ If you're tempted to remove something in this list, **don't**. The risk/reward i
 
 - **GetApps (`com.xiaomi.mipicks`) re-installs apps after OTA.** This is why we remove it entirely rather than just disabling it. After major HyperOS updates, re-run `debloat.sh --yes` to re-remove anything that came back.
 - **Joyose controls Game Turbo.** Removing it disables Game Turbo's advanced features (frame interpolation, per-game performance profiles). If you game seriously, keep Joyose. If not, remove it for the telemetry cut.
-- **MSA (`com.miui.msa.global`) is the single most worthwhile removal** for privacy — it's the Xiaomi Ad SDK that powers ads across Notifications, GetApps, and Settings.
+- **MSA (`com.miui.msa.global`) is the single most worthwhile removal** for privacy - it's the Xiaomi Ad SDK that powers ads across Notifications, GetApps, and Settings.
 - **After a HyperOS major update**, some removed apps come back. Re-run `debloat.sh --yes` from the saved log to clean up.
-- **Some packages are stub overlays** (e.g. `com.miui.miwallpaper.overlay`). Don't remove overlays individually — they're tiny and harmless, and removing the wrong one can break theming.
-- **HyperOS 2 on Android 16** uses kernel 6.6.77 with the `walt` CPU governor. The debloat doesn't touch any of this — it's purely user-profile package removal.
+- **Some packages are stub overlays** (e.g. `com.miui.miwallpaper.overlay`). Don't remove overlays individually - they're tiny and harmless, and removing the wrong one can break theming.
+- **HyperOS 2 on Android 16** uses kernel 6.6.77 with the `walt` CPU governor. The debloat doesn't touch any of this - it's purely user-profile package removal.
 
 ---
 
 ## Performance optimizations applied
 
-In addition to debloating, the author applied these optimizations to the test device (NOT done by `debloat.sh` — run them manually if you want them):
+In addition to debloating, the author applied these optimizations to the test device (NOT done by `debloat.sh` - run them manually if you want them):
 
 ### Animation speed-up (0.5x)
 
@@ -393,7 +393,7 @@ Tips to slow future degradation:
 - Enable HyperOS charging optimization (Settings → Battery → hold at 80% overnight)
 - Avoid deep discharges (keep it in 30–80% range)
 - Avoid hot fast-charging sessions (use a slower charger overnight)
-- Don't worry about "training" the battery — that's outdated advice for NiMH, not Li-poly
+- Don't worry about "training" the battery - that's outdated advice for NiMH, not Li-poly
 
 Monitor over time with:
 ```bash
@@ -425,7 +425,7 @@ adb shell pm clear com.android.providers.settings  # not recommended
 
 ### A removal fails with `DELETE_FAILED_INTERNAL_ERROR`
 
-The package is protected by the system. Skip it — don't fight it. The script will report `FAIL` and continue.
+The package is protected by the system. Skip it - don't fight it. The script will report `FAIL` and continue.
 
 ### Settings crashes after a removal
 
@@ -455,19 +455,19 @@ This happens after a HyperOS OTA if the package was removed from the system part
 A: No. `pm uninstall --user 0` only affects your user profile. The system partition is untouched, the bootloader stays locked, and Xiaomi service centers don't check user-profile package state.
 
 **Q: Will banking apps still work?**
-A: Yes. Play Integrity / SafetyNet checks pass because the system partition is untouched and the bootloader is locked. Root would break these — this script does not root.
+A: Yes. Play Integrity / SafetyNet checks pass because the system partition is untouched and the bootloader is locked. Root would break these - this script does not root.
 
 **Q: Will OTA updates still work?**
-A: Yes. System updates install normally. Some removed apps may come back after a major OTA — re-run `debloat.sh --yes` to clean up.
+A: Yes. System updates install normally. Some removed apps may come back after a major OTA - re-run `debloat.sh --yes` to clean up.
 
 **Q: Can I run this on other Xiaomi phones?**
-A: The package names are HyperOS-specific and most apply to any recent Xiaomi device (POCO, Redmi, Mi). However, some packages may not exist on your firmware — the script skips missing packages gracefully. Always run `--list` first to preview.
+A: The package names are HyperOS-specific and most apply to any recent Xiaomi device (POCO, Redmi, Mi). However, some packages may not exist on your firmware - the script skips missing packages gracefully. Always run `--list` first to preview.
 
 **Q: Can I run this on non-Xiaomi phones?**
 A: No. The package names (`com.miui.*`, `com.xiaomi.*`) are Xiaomi-specific. Samsung, Pixel, etc. have their own bloat with different package names.
 
 **Q: Does this need root?**
-A: No. This is the whole point — it works on a fully stock, locked device.
+A: No. This is the whole point - it works on a fully stock, locked device.
 
 **Q: How much RAM/storage does this free?**
 A: RAM: ~500 MB - 1 GB depending on what was running. Storage: minimal (~50-100 MB), because the APKs stay on `/system`. The main benefit is reduced background CPU/battery drain and privacy, not storage.
@@ -478,8 +478,8 @@ A: After a major HyperOS OTA, possibly yes. Re-run `debloat.sh --yes` to re-remo
 **Q: Can I add my own packages to remove?**
 A: Yes. Either pass them explicitly to `restore.sh` for undo, or add a new `BATCH6=(...)` line to `debloat.sh` following the existing pattern. Always test with `--list` first.
 
-**Q: The load average is high after debloat — is something wrong?**
-A: No. On Snapdragon 8s Gen 4 + HyperOS, the `cpudmof/*` kernel DMA-fence threads sit in D-state and inflate the load average. This is cosmetic — actual CPU usage is low (cores idle at 441 MHz). Check `top -n 1 -m 10 -s cpu` for real CPU consumers.
+**Q: The load average is high after debloat - is something wrong?**
+A: No. On Snapdragon 8s Gen 4 + HyperOS, the `cpudmof/*` kernel DMA-fence threads sit in D-state and inflate the load average. This is cosmetic - actual CPU usage is low (cores idle at 441 MHz). Check `top -n 1 -m 10 -s cpu` for real CPU consumers.
 
 ---
 
@@ -499,7 +499,9 @@ The author is not liable for any damage, data loss, or inconvenience. Use at you
 
 ## License
 
-This project is released into the public domain under the terms of [CC0](https://creativecommons.org/publicdomain/zero/1.0/). Do whatever you want with it.
+This project is licensed under the **GNU General Public License v3.0** (GPL-3.0). See the [LICENSE](LICENSE) file for the full text.
+
+In short: you can use, modify, and distribute this project, including commercially, **but** any derivative work must also be licensed under GPL-3.0 and include the source code. This keeps the project and its derivatives open forever.
 
 ---
 
@@ -511,4 +513,4 @@ This project is released into the public domain under the terms of [CC0](https:/
 
 ---
 
-**73 de 9M2PJU** — happy debloating!
+**73 de 9M2PJU** - happy debloating!
