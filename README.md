@@ -238,16 +238,17 @@ Every removal is logged in `backup/removed_packages.txt`. Run `bash restore.sh` 
 
 ### Visualized results
 
-GitHub renders Mermaid diagrams natively, so these charts are part of the README itself - no external image hosting, no broken links.
+GitHub renders Mermaid pie charts natively, and bar comparisons are shown as ASCII bars in code blocks (no external image hosting, no broken links).
 
 **System packages: stock vs after debloat**
 
-```mermaid
-xychart-beta
-    title "System packages (user 0) - stock vs after debloat"
-    x-axis ["Stock", "After B1-4", "After B5", "After B6", "After B7"]
-    y-axis "Package count" 0 --> 450
-    bar [405, 386, 384, 379, 378]
+```
+Stock       ████████████████████████████████████████  405
+After B1-4  ██████████████████████████████████████    386
+After B5    █████████████████████████████████████     384
+After B6    █████████████████████████████████████     379
+After B7    █████████████████████████████████████     378
+                                                 (-27 total)
 ```
 
 **Removed packages by category (27 total)**
@@ -266,70 +267,72 @@ pie showData
 
 **Background services / SDKs removed**
 
-```mermaid
-xychart-beta
-    title "Always-running background services removed"
-    x-axis ["Telemetry", "Meta tracking", "Microsoft", "Ad SDKs", "GetApps auto-install"]
-    y-axis "Services" 0 --> 6
-    bar [5, 3, 3, 1, 1]
+```
+Telemetry             █████       5
+Meta tracking         ███         3
+Microsoft             ███         3
+Ad SDKs (MSA)         █           1
+GetApps auto-install  █           1
+                                  (13 always-running services gone)
 ```
 
 **RAM freed by batch (when those processes were running)**
 
-```mermaid
-xychart-beta
-    title "RAM freed per batch (MB, approximate, when processes were running)"
-    x-axis ["B1 ad/tele", "B2 duplicates", "B3 Meta", "B4 MS", "B5 drawer", "B6 Google", "B7 SOTER"]
-    y-axis "MB" 0 --> 200
-    bar [60, 120, 80, 40, 15, 130, 6]
+```
+B1 ad/tele     ████████           60 MB
+B2 duplicates  ████████████████  120 MB
+B3 Meta        ███████████        80 MB
+B4 MS          █████              40 MB
+B5 drawer      ██                 15 MB
+B6 Google      █████████████████ 130 MB
+B7 SOTER       █                   6 MB
+                                   (~451 MB when all were running)
 ```
 
 > Batch 6 is the biggest single win because Google Duo/Meet (83 MB), Digital Wellbeing (37 MB), and MiSightService (10 MB) were all actively running. Batches 1-5 freed RAM too, but those processes were often idle - the real win is they no longer wake up at all.
 
 **Free RAM: stock vs after (typical idle)**
 
-```mermaid
-xychart-beta
-    title "Free RAM (GB) - typical idle"
-    x-axis ["Stock", "After debloat"]
-    y-axis "GB" 0 --> 12
-    bar [5.5, 5.4]
+```
+Stock           ███████████████  5.5 GB
+After debloat   ██████████████   5.4 GB
 ```
 
 > Free RAM numbers look similar because Android aggressively caches background processes. The real difference is *what* is using the RAM: stock has 27 bloat processes cached; after debloat those slots are taken by apps you actually use, or stay genuinely free.
 
 **Current top RAM users (after debloat, measured live)**
 
-```mermaid
-xychart-beta
-    title "Top RAM users after debloat (MB RSS, live measurement)"
-    x-axis ["system_server", "SystemUI", "Facebook", "Instagram", "GMS", "GMS.persist", "Settings", "Gmail", "Gboard", "Nova"]
-    y-axis "MB" 0 --> 900
-    bar [799, 579, 416, 394, 384, 353, 306, 269, 263, 258]
+```
+system_server   ████████████████████████████████████████  799 MB
+SystemUI        ███████████████████████████████           579 MB
+Facebook        ███████████████████████                   416 MB
+Instagram       ██████████████████████                    394 MB
+GMS             █████████████████████                     384 MB
+GMS.persist     ███████████████████                       353 MB
+Settings        █████████████████                         306 MB
+Gmail           ██████████████                            269 MB
+Gboard          █████████████                             263 MB
+Nova            █████████████                             258 MB
 ```
 
 > None of the top RAM consumers are bloat - they are either system processes (system_server, SystemUI, GMS, Settings, Gboard) or apps the author actively uses (Facebook, Instagram, Gmail, Nova Launcher). Before debloat, MSA / Joyose / Meta services / Microsoft services / Duo would have appeared in this list.
 
 **CPU usage: stock vs after (system_server, idle)**
 
-```mermaid
-xychart-beta
-    title "system_server CPU usage idle (%, 5-min avg)"
-    x-axis ["Stock", "After debloat"]
-    y-axis "%" 0 --> 20
-    bar [12.4, 8.7]
+```
+Stock           ████████████████████████████  12.4%
+After debloat   ███████████████████             8.7%
+                                  (-3.7% continuous CPU)
 ```
 
 > Measured via `adb shell dumpsys cpuinfo`. Stock system_server spent ~12.4% servicing telemetry wakeups, MSA ad refreshes, and Joyose reports. After debloat it idles at ~8.7% (mostly binder + sensor service + connectivity). The 3.7% saving is small in absolute terms but it is *continuous* - it adds up to meaningful battery savings over a day.
 
 **Battery: background wakeup sources eliminated**
 
-```mermaid
-xychart-beta
-    title "Background wakeup sources (count, idle hour)"
-    x-axis ["Stock", "After debloat"]
-    y-axis "Wakeups / hour" 0 --> 50
-    bar [42, 8]
+```
+Stock           ██████████████████████████████████████████  42 / hour
+After debloat   ████████                                     8 / hour
+                                                (-81% background wakeups)
 ```
 
 > Stock: MSA, Joyose, analytics, bugreport, MiSightService, Meta services, Microsoft services, and GetApps collectively woke the phone ~42 times per idle hour (measured via `adb logcat -d | grep -E 'wakeup'`). After debloat: only Xiaomi core system services remain, ~8 wakeups per hour. Fewer wakeups = deeper sleep = longer battery.
