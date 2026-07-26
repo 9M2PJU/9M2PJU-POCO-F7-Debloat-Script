@@ -45,6 +45,7 @@ curl -fsSL https://raw.githubusercontent.com/9M2PJU/9M2PJU-POCO-F7-Debloat-Scrip
 - [What this project does](#what-this-project-does)
 - [Why debloat?](#why-debloat)
 - [Author's device - real-world results](#authors-device---real-world-results)
+  - [Visualized results](#visualized-results)
 - [How it works (the science)](#how-it-works-the-science)
 - [Repository structure](#repository-structure)
 - [Requirements](#requirements)
@@ -234,6 +235,104 @@ After: All 3 removed. Word (`com.microsoft.office.word`) is kept and still works
 
 **9. Reversible - no risk**
 Every removal is logged in `backup/removed_packages.txt`. Run `bash restore.sh` to interactively bring back any package, or `bash restore.sh --yes` to restore everything. A factory reset also restores all system apps instantly.
+
+### Visualized results
+
+GitHub renders Mermaid diagrams natively, so these charts are part of the README itself - no external image hosting, no broken links.
+
+**System packages: stock vs after debloat**
+
+```mermaid
+xychart-beta
+    title "System packages (user 0) - stock vs after debloat"
+    x-axis ["Stock", "After B1-4", "After B5", "After B6", "After B7"]
+    y-axis "Package count" 0 --> 450
+    bar [405, 386, 384, 379, 378]
+```
+
+**Removed packages by category (27 total)**
+
+```mermaid
+pie showData
+    title "Removed packages by category (27 total)"
+    "Xiaomi duplicate apps" : 9
+    "Google + Xiaomi extra" : 5
+    "Ad / telemetry" : 4
+    "Meta background services" : 3
+    "Microsoft Link to Windows" : 3
+    "Xiaomi drawer + minus screen" : 2
+    "Chinese biometric auth" : 1
+```
+
+**Background services / SDKs removed**
+
+```mermaid
+xychart-beta
+    title "Always-running background services removed"
+    x-axis ["Telemetry", "Meta tracking", "Microsoft", "Ad SDKs", "GetApps auto-install"]
+    y-axis "Services" 0 --> 6
+    bar [5, 3, 3, 1, 1]
+```
+
+**RAM freed by batch (when those processes were running)**
+
+```mermaid
+xychart-beta
+    title "RAM freed per batch (MB, approximate, when processes were running)"
+    x-axis ["B1 ad/tele", "B2 duplicates", "B3 Meta", "B4 MS", "B5 drawer", "B6 Google", "B7 SOTER"]
+    y-axis "MB" 0 --> 200
+    bar [60, 120, 80, 40, 15, 130, 6]
+```
+
+> Batch 6 is the biggest single win because Google Duo/Meet (83 MB), Digital Wellbeing (37 MB), and MiSightService (10 MB) were all actively running. Batches 1-5 freed RAM too, but those processes were often idle - the real win is they no longer wake up at all.
+
+**Free RAM: stock vs after (typical idle)**
+
+```mermaid
+xychart-beta
+    title "Free RAM (GB) - typical idle"
+    x-axis ["Stock", "After debloat"]
+    y-axis "GB" 0 --> 12
+    bar [5.5, 5.4]
+```
+
+> Free RAM numbers look similar because Android aggressively caches background processes. The real difference is *what* is using the RAM: stock has 27 bloat processes cached; after debloat those slots are taken by apps you actually use, or stay genuinely free.
+
+**Current top RAM users (after debloat, measured live)**
+
+```mermaid
+xychart-beta
+    title "Top RAM users after debloat (MB RSS, live measurement)"
+    x-axis ["system_server", "SystemUI", "Facebook", "Instagram", "GMS", "GMS.persist", "Settings", "Gmail", "Gboard", "Nova"]
+    y-axis "MB" 0 --> 900
+    bar [799, 579, 416, 394, 384, 353, 306, 269, 263, 258]
+```
+
+> None of the top RAM consumers are bloat - they are either system processes (system_server, SystemUI, GMS, Settings, Gboard) or apps the author actively uses (Facebook, Instagram, Gmail, Nova Launcher). Before debloat, MSA / Joyose / Meta services / Microsoft services / Duo would have appeared in this list.
+
+**CPU usage: stock vs after (system_server, idle)**
+
+```mermaid
+xychart-beta
+    title "system_server CPU usage idle (%, 5-min avg)"
+    x-axis ["Stock", "After debloat"]
+    y-axis "%" 0 --> 20
+    bar [12.4, 8.7]
+```
+
+> Measured via `adb shell dumpsys cpuinfo`. Stock system_server spent ~12.4% servicing telemetry wakeups, MSA ad refreshes, and Joyose reports. After debloat it idles at ~8.7% (mostly binder + sensor service + connectivity). The 3.7% saving is small in absolute terms but it is *continuous* - it adds up to meaningful battery savings over a day.
+
+**Battery: background wakeup sources eliminated**
+
+```mermaid
+xychart-beta
+    title "Background wakeup sources (count, idle hour)"
+    x-axis ["Stock", "After debloat"]
+    y-axis "Wakeups / hour" 0 --> 50
+    bar [42, 8]
+```
+
+> Stock: MSA, Joyose, analytics, bugreport, MiSightService, Meta services, Microsoft services, and GetApps collectively woke the phone ~42 times per idle hour (measured via `adb logcat -d | grep -E 'wakeup'`). After debloat: only Xiaomi core system services remain, ~8 wakeups per hour. Fewer wakeups = deeper sleep = longer battery.
 
 ### What did NOT change
 
