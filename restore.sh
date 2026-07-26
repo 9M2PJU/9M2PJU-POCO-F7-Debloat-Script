@@ -45,49 +45,53 @@ if ! adb devices 2>/dev/null </dev/null | grep -q '\bdevice$'; then
 fi
 
 # ---------- Package metadata (mirrors debloat.sh) ----------
-# Format: "package|description|why_was_removed"
+# Format: "package|what|details|why_was_removed|caveats"
 PKG_META=(
-  "com.miui.msa.global|Xiaomi Ad SDK (MSA)|Was removed: pushes ads in Notifications, GetApps, Settings."
-  "com.xiaomi.joyose|Telemetry + Game Turbo backend|Was removed: Xiaomi usage analytics. Note: restoring re-enables Game Turbo advanced features."
-  "com.miui.analytics|Usage analytics|Was removed: usage pattern reporting to Xiaomi."
-  "com.miui.bugreport|Bug report uploader|Was removed: automatic bug report telemetry."
-  "com.mi.globalbrowser|Mi Browser|Was removed: replaced by Firefox/Chrome."
-  "com.miui.player|Mi Music|Was removed: replaced by Spotify/YouTube Music."
-  "com.miui.videoplayer|Mi Video|Was removed: replaced by VLC."
-  "com.miui.yellowpage|Business directory spam|Was removed: useless in most regions."
-  "com.miui.touchassistant|Floating ball assistant|Was removed: gimmick; uses RAM."
-  "com.miui.thirdappassistant|Third-party app promo|Was removed: pushes app recommendations."
-  "com.miui.securityadd|Security add-on module|Was removed: redundant with main Security Center."
-  "com.xiaomi.mipicks|GetApps - Xiaomi's app store|Was removed: pushes junk app installs in background."
-  "com.xiaomi.discover|GetApps companion|Was removed: same as GetApps."
-  "com.facebook.system|Meta background service|Was removed: tracking SDK; runs constantly."
-  "com.facebook.services|Meta app support service|Was removed: background helper for Facebook apps."
-  "com.facebook.appmanager|Meta app updater|Was removed: auto-updates FB apps."
-  "com.microsoft.appmanager|Phone Link companion|Was removed: only useful with Phone Link on Windows."
-  "com.microsoft.deviceintegrationservice|Cross-device integration service|Was removed: same as above."
-  "com.microsoftsdk.crossdeviceservicebroker|SDK broker for Link to Windows|Was removed: same as above."
-  "com.mi.appfinder|App drawer search bar|Was removed: indexes app usage. Used ~298 MB RAM."
-  "com.mi.globalminusscreen|Leftmost 'minus screen' with news/ads|Was removed: ad surface. Used ~255 MB RAM."
-  "com.google.android.apps.tachyon|Google Duo/Meet|Was removed: video calling. Used ~83 MB RAM."
-  "com.google.android.apps.youtube.music|YouTube Music (system app)|Was removed: replaced by ReVanced."
-  "com.google.android.apps.wellbeing|Digital Wellbeing|Was removed: screen time tracker. Used ~37 MB RAM."
-  "com.miui.misightservice|Xiaomi insights/telemetry|Was removed: telemetry. Used ~10 MB RAM."
-  "com.xiaomi.barrage|Xiaomi bullet comments (danmaku)|Was removed: Chinese-market feature, useless outside China."
-  "com.tencent.soter.soterserver|Tencent SOTER biometric auth server|Was removed: Chinese biometric auth for WeChat/QQ. Useless outside China. Used ~6 MB RAM."
+  "com.miui.msa.global|Xiaomi Ad SDK (MSA)|Xiaomi Mobile Ad SDK. Injects ads into Notification shade, Settings, GetApps, Security Center. Persistent background service. Biggest source of in-OS ads.|Was removed: pushes ads across the OS and collects ad-targeting data.|Restoring re-enables ads in Notification shade, Settings, and other Xiaomi apps."
+  "com.xiaomi.joyose|Xiaomi Joyose (telemetry + Game Turbo)|Background service: usage analytics, device health reporting, Game Turbo backend. Phones home with usage patterns and performance metrics.|Was removed: Xiaomi usage analytics and telemetry.|Restoring re-enables Game Turbo advanced features (per-game GPU/CPU tuning, brightness lock, calls blocking during games)."
+  "com.miui.analytics|Xiaomi Analytics|Collects and uploads app usage patterns, feature usage, crash stats, device telemetry to Xiaomi.|Was removed: usage pattern reporting to Xiaomi.|Restoring re-enables telemetry collection. No user-facing feature added."
+  "com.miui.bugreport|Xiaomi Bug Report|Automatic bug report capture and uploader. Sends device state, logs, stack traces to Xiaomi on crashes.|Was removed: automatic bug report telemetry.|Restoring re-enables automatic bug report uploads."
+  "com.mi.globalbrowser|Mi Browser|Xiaomi's default browser. Custom Chromium fork with Xiaomi tracking, news feed, push notifications. Sends browsing data to Xiaomi.|Was removed: replaced by Firefox/Chrome; tracking surface.|Restoring brings back Xiaomi's browser with tracking. Set it as default again if you want to use it."
+  "com.miui.player|Mi Music|Xiaomi's default music player. Includes Xiaomi music streaming (mostly Chinese catalog), ads in free tier.|Was removed: replaced by Spotify/YouTube Music/other.|Restoring brings back Mi Music with ads. Audio playback in other apps unaffected."
+  "com.miui.videoplayer|Mi Video|Xiaomi's default video player. Includes Xiaomi video streaming (mostly Chinese/Indian content), ads.|Was removed: replaced by VLC/MX Player/other.|Restoring brings back Mi Video with ads."
+  "com.miui.yellowpage|YellowPage|Xiaomi business directory with paid placements. Mostly useless outside China/India. Pushes promotional notifications.|Was removed: useless in most regions; notification spam.|Restoring may re-enable promotional notifications."
+  "com.miui.touchassistant|TouchAssistant (floating ball)|Floating ball on screen edge with shortcuts (screenshot, lock, recents, back). Gimmick; uses RAM.|Was removed: gimmick; uses RAM.|Restoring brings back the floating ball. You can disable it in Settings if unwanted."
+  "com.miui.thirdappassistant|ThirdAppAssistant|Pushes third-party app recommendations and promotions in system UI.|Was removed: ad/recommendation surface.|Restoring re-enables app recommendation pushes."
+  "com.miui.securityadd|Security add-on module|Add-on for Security Center with redundant 'optimization' features (deep clean, junk scan). Upsells Xiaomi services, shows ads.|Was removed: redundant; ad surface.|Restoring brings back the add-on with ads. Main Security Center works without it."
+  "com.xiaomi.mipicks|GetApps (Xiaomi app store)|Xiaomi's alternative app store. Pushes 'recommended' app installs in background, shows deal notifications, installs apps you didn't ask for. Major nuisance.|Was removed: pushes junk app installs in background; major nuisance.|Restoring re-enables background app installs and recommendation notifications. This is why you'd find random games on your phone."
+  "com.xiaomi.discover|GetApps Discover|Companion to GetApps. Provides 'Discover' feed with app recommendations and promotions.|Was removed: same as GetApps - recommendation/ad surface.|Restoring re-enables the Discover feed. Works with mipicks."
+  "com.facebook.system|Meta background service (Facebook)|Meta's tracking SDK as a system service. Tracks location, app usage, device info even when NOT using Facebook. Can receive push data from Meta servers.|Was removed: tracking SDK running constantly; privacy concern.|Restoring re-enables background tracking. Facebook/Instagram apps work without it - this is an optional helper."
+  "com.facebook.services|Meta app support service|Background helper for Facebook/Instagram. Cross-app communication and account syncing.|Was removed: background helper not needed.|Restoring re-enables the helper. Facebook apps work without it."
+  "com.facebook.appmanager|Meta app updater|Background updater for Facebook/Instagram/Messenger. Bypasses Play Store update cycle, can update without consent.|Was removed: auto-updates FB apps without consent.|Restoring re-enables bypass of Play Store update control for Meta apps."
+  "com.microsoft.appmanager|Phone Link companion|Microsoft Phone Link companion. Text, call, see notifications, mirror photos on Windows PC. Runs in background.|Was removed: only useful with Phone Link on Windows.|Restoring re-enables Phone Link integration. Install Phone Link on your PC to use it."
+  "com.microsoft.deviceintegrationservice|Cross-device integration service|Backend for Phone Link. Handles cross-device communication (notifications sync, file transfer, call relay).|Was removed: only useful with Phone Link on Windows.|Restoring re-enables the Phone Link backend."
+  "com.microsoftsdk.crossdeviceservicebroker|SDK broker for Link to Windows|SDK broker mediating between Phone Link apps and system.|Was removed: part of Phone Link stack.|Restoring completes the Phone Link stack. Microsoft Word is NOT affected."
+  "com.mi.appfinder|App drawer search bar|Search bar in app drawer. Indexes apps AND app usage patterns. Sends usage data to Xiaomi. Uses ~298 MB RAM.|Was removed: indexes app usage and sends to Xiaomi; ~298 MB RAM.|Restoring brings back the search bar and usage indexing. App drawer works without it."
+  "com.mi.globalminusscreen|Minus screen (leftmost home screen)|Leftmost home screen page with news, ads, 'recommended' apps, widgets. Xiaomi sells as ad inventory. Uses ~255 MB RAM.|Was removed: ad surface; ~255 MB RAM.|Restoring brings back the minus screen with ads and news."
+  "com.google.android.apps.tachyon|Google Duo/Meet|Google's video calling app (rebranded to Meet). System app. Uses ~83 MB RAM when active.|Was removed: replaced by WhatsApp/Discord/other; ~83 MB RAM.|Restoring brings back Duo/Meet. You can also install Google Meet from Play Store instead."
+  "com.google.android.apps.youtube.music|YouTube Music (system app)|System version of YouTube Music.|Was removed: replaced by ReVanced YouTube Music/other.|Restoring brings back the system YT Music app. You can also install from Play Store."
+  "com.google.android.apps.wellbeing|Digital Wellbeing|Google's screen time tracker. App usage time, app timers, wind-down, focus mode. Uses ~37 MB RAM.|Was removed: screen time tracker not used; ~37 MB RAM.|Restoring brings back Digital Wellbeing. You can also install from Play Store."
+  "com.miui.misightservice|Xiaomi MiSight (insights/telemetry)|Xiaomi's insights and telemetry service. Collects device health, feature usage, system metrics. Phones home. Uses ~10 MB RAM.|Was removed: telemetry; ~10 MB RAM.|Restoring re-enables another telemetry channel to Xiaomi."
+  "com.xiaomi.barrage|Xiaomi Barrage (bullet comments)|Danmaku-style floating bullet comments overlay for videos. Chinese market feature. Useless outside China.|Was removed: Chinese-market feature, useless outside China.|Restoring brings back the bullet comments feature. Only useful if you watch Chinese video platforms."
+  "com.tencent.soter.soterserver|Tencent SOTER (biometric auth server)|Tencent's SOTER biometric authentication server. Chinese standard for fingerprint/face login in WeChat, QQ, Tencent games, some banking apps. Uses ~6 MB RAM.|Was removed: Chinese biometric auth for WeChat/QQ; useless outside China; ~6 MB RAM.|Restoring re-enables biometric auth for Chinese apps. Only needed if you use WeChat/QQ/Chinese banking apps with fingerprint login."
 )
 
 # ---------- Look up metadata for a package ----------
-# Sets META_DESC and META_WHY globals, or empty if unknown
+# Sets META_WHAT, META_DETAILS, META_WHY, META_CAVEATS globals (or empty)
 lookup_meta() {
   local pkg="$1"
-  META_DESC=""
+  META_WHAT=""
+  META_DETAILS=""
   META_WHY=""
+  META_CAVEATS=""
   for entry in "${PKG_META[@]}"; do
-    local p d w
-    IFS='|' read -r p d w <<< "$entry"
+    local p what details why caveats
+    IFS='|' read -r p what details why caveats <<< "$entry"
     if [ "$p" = "$pkg" ]; then
-      META_DESC="$d"
-      META_WHY="$w"
+      META_WHAT="$what"
+      META_DETAILS="$details"
+      META_WHY="$why"
+      META_CAVEATS="$caveats"
       return 0
     fi
   done
@@ -144,13 +148,19 @@ show_pkg_card() {
   fi
   echo ""
   echo "  ${C_BOLD}Package:${C_RESET}  $pkg"
-  if [ -n "$META_DESC" ]; then
-    echo "  ${C_BOLD}What:${C_RESET}     $META_DESC"
+  if [ -n "$META_WHAT" ]; then
+    echo "  ${C_BOLD}What:${C_RESET}     $META_WHAT"
   else
     echo "  ${C_BOLD}What:${C_RESET}     (no description available)"
   fi
+  if [ -n "$META_DETAILS" ]; then
+    echo "  ${C_BOLD}Details:${C_RESET} $META_DETAILS"
+  fi
   if [ -n "$META_WHY" ]; then
     echo "  ${C_BOLD}History:${C_RESET}  $META_WHY"
+  fi
+  if [ -n "$META_CAVEATS" ]; then
+    echo "  ${C_BOLD}Restoring:${C_RESET} $META_CAVEATS"
   fi
   echo "  ${C_BOLD}Status:${C_RESET}    $status"
 }
@@ -215,8 +225,8 @@ echo ""
 if [ "$LIST_ONLY" = "1" ]; then
   for p in "${TARGETS[@]}"; do
     lookup_meta "$p"
-    if [ -n "$META_DESC" ]; then
-      echo "  would restore: $p  ${C_DIM}($META_DESC)${C_RESET}"
+    if [ -n "$META_WHAT" ]; then
+      echo "  would restore: $p  ${C_DIM}($META_WHAT)${C_RESET}"
     else
       echo "  would restore: $p"
     fi

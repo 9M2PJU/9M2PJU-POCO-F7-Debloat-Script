@@ -102,17 +102,23 @@ remove_pkg() {
 }
 
 # ---------- Display a package card ----------
-# Format: "pkg|description|why_remove"
+# Format: "pkg|what|details|why|caveats"
 # Sets CARD_RAM global with RAM usage string (or empty) for option labels
 show_pkg_card() {
   local entry="$1"
-  local pkg desc why
-  IFS='|' read -r pkg desc why <<< "$entry"
+  local pkg what details why caveats
+  IFS='|' read -r pkg what details why caveats <<< "$entry"
   CARD_RAM=$(get_ram_usage "$pkg")
   echo ""
   echo "  ${C_BOLD}Package:${C_RESET}  $pkg"
-  echo "  ${C_BOLD}What:${C_RESET}     $desc"
+  echo "  ${C_BOLD}What:${C_RESET}     $what"
+  if [ -n "$details" ]; then
+    echo "  ${C_BOLD}Details:${C_RESET} $details"
+  fi
   echo "  ${C_BOLD}Why:${C_RESET}      $why"
+  if [ -n "$caveats" ]; then
+    echo "  ${C_BOLD}Caveats:${C_RESET}  $caveats"
+  fi
   if [ -n "$CARD_RAM" ]; then
     echo "  ${C_BOLD}Now:${C_RESET}      ${C_YELLOW}${CARD_RAM}${C_RESET}"
   fi
@@ -128,9 +134,9 @@ run_batch() {
 
   if [ "$LIST_ONLY" = "1" ]; then
     for e in "${entries[@]}"; do
-      local pkg
-      IFS='|' read -r pkg _ _ <<< "$e"
-      echo "  would remove: $pkg"
+      local pkg what
+      IFS='|' read -r pkg what _ _ _ <<< "$e"
+      echo "  would remove: $pkg  ${C_DIM}($what)${C_RESET}"
     done
     echo ""
     return 0
@@ -146,7 +152,7 @@ run_batch() {
   local skipped=0
   for e in "${entries[@]}"; do
     local pkg
-    IFS='|' read -r pkg _ _ <<< "$e"
+    IFS='|' read -r pkg _ _ _ _ <<< "$e"
 
     if [ "$INTERACTIVE" = "1" ]; then
       show_pkg_card "$e"
@@ -208,53 +214,57 @@ run_batch() {
 }
 
 # ---------- Batch definitions ----------
-# Format: "package|description|why_remove"
+# Format: "package|what|details|why|caveats"
+# - what:     short name/description
+# - details:  what it actually does (the full picture)
+# - why:      why it's being removed
+# - caveats:  what may break or change if removed (empty = safe)
 BATCH1=(
-  "com.miui.msa.global|Xiaomi Ad SDK (MSA)|Pushes ads in Notifications, GetApps, Settings. Single biggest privacy win."
-  "com.xiaomi.joyose|Telemetry + Game Turbo backend|Stops Xiaomi usage analytics. Disables Game Turbo advanced features (acceptable if you don't game seriously)."
-  "com.miui.analytics|Usage analytics|Stops usage pattern reporting to Xiaomi."
-  "com.miui.bugreport|Bug report uploader|Stops automatic bug report telemetry."
+  "com.miui.msa.global|Xiaomi Ad SDK (MSA)|Xiaomi Mobile Ad SDK. Injects ads into Notification shade, Settings app, GetApps, Security Center, and other Xiaomi apps. Runs as a persistent background service. The single biggest source of in-OS ads on HyperOS.|Biggest privacy and UX win. Removes ads from the entire OS. Stops ad-targeting data collection.|Safe to remove. No system functionality breaks. Ads simply stop appearing."
+  "com.xiaomi.joyose|Xiaomi Joyose (telemetry + Game Turbo)|Background service handling usage analytics, device health reporting, and Game Turbo backend. Phones home with usage patterns, app launch data, and performance metrics. Also powers Game Turbo's per-game performance profiles.|Stops Xiaomi usage analytics and telemetry reporting. Reclaim background CPU and RAM.|Removing disables Game Turbo advanced features (per-game GPU/CPU tuning, brightness lock, calls blocking during games). Basic gaming still works fine. Games just won't get the optimized performance profile."
+  "com.miui.analytics|Xiaomi Analytics|Collects and uploads app usage patterns, feature usage, crash stats, and device telemetry to Xiaomi servers. Runs in background.|Stops usage pattern reporting to Xiaomi. Privacy win.|Safe to remove. No user-facing functionality breaks."
+  "com.miui.bugreport|Xiaomi Bug Report|Automatic bug report capture and uploader. Triggers on crashes/anomalies and uploads detailed device state, logs, and stack traces to Xiaomi.|Stops automatic bug report telemetry. Your crash data and logs no longer get sent to Xiaomi without consent.|Safe to remove. Manual bug reports via Settings still work if you ever need them."
 )
 
 BATCH2=(
-  "com.mi.globalbrowser|Mi Browser|Replaced by Firefox/Chrome."
-  "com.miui.player|Mi Music|Replaced by Spotify/YouTube Music."
-  "com.miui.videoplayer|Mi Video|Replaced by VLC."
-  "com.miui.yellowpage|Business directory spam|Useless in most regions."
-  "com.miui.touchassistant|Floating ball assistant|Gimmick; uses RAM."
-  "com.miui.thirdappassistant|Third-party app promo|Pushes app recommendations."
-  "com.miui.securityadd|Security add-on module|Redundant with main Security Center."
-  "com.xiaomi.mipicks|GetApps - Xiaomi's app store|Pushes junk app installs in background; major nuisance."
-  "com.xiaomi.discover|GetApps companion|Same as above."
+  "com.mi.globalbrowser|Mi Browser|Xiaomi's default web browser. Based on a custom Chromium fork with Xiaomi tracking, news feed, and push notifications built in. Sends browsing data to Xiaomi.|Replaced by Firefox, Chrome, Brave, or any other browser. Removes a tracking surface.|Safe to remove. Set another browser as default in Settings > Apps > Default apps. Links will open in your chosen browser."
+  "com.miui.player|Mi Music|Xiaomi's default music player. Includes Xiaomi's music streaming service (mostly Chinese catalog), ads in the free tier, and a custom audio engine wrapper.|Replaced by Spotify, YouTube Music, Poweramp, or any other music app you prefer.|Safe to remove. Audio playback still works in other apps. No system audio features break."
+  "com.miui.videoplayer|Mi Video|Xiaomi's default video player. Includes Xiaomi's video streaming service (mostly Chinese/Indian content), ads, and a custom video engine.|Replaced by VLC, MX Player, or any other video player.|Safe to remove. Video playback in other apps unaffected."
+  "com.miui.yellowpage|YellowPage|Xiaomi's business directory. Shows nearby businesses with paid placements. Mostly useless outside China/India. Pushes promotional notifications.|Useless in most regions. Removes a notification spam source.|Safe to remove. No contacts or dialer functionality breaks."
+  "com.miui.touchassistant|TouchAssistant (floating ball)|A floating ball on the screen edge with shortcuts (screenshot, lock, recent apps, back). Gimmick feature that uses RAM and screen space.|Gimmick; uses RAM. Most people disable it within a day of getting the phone.|Safe to remove. All functions it offers are available elsewhere (screenshot, recents, etc.)."
+  "com.miui.thirdappassistant|ThirdAppAssistant|Pushes third-party app recommendations and promotions in the system. Surfaces 'recommended apps' in various Xiaomi UI surfaces.|Removes an ad/recommendation surface. Stops Xiaomi pushing junk app installs via this channel.|Safe to remove. No functionality breaks."
+  "com.miui.securityadd|Security add-on module|An add-on for Xiaomi Security Center that adds redundant 'optimization' features (deep clean, junk scan). Mostly upsells Xiaomi services and shows ads.|Redundant with the main Security Center. Removes an ad surface.|Safe to remove. Main Security Center (com.miui.securitycenter) still works. Core security features (antivirus, permissions, privacy) unaffected."
+  "com.xiaomi.mipicks|GetApps (Xiaomi app store)|Xiaomi's alternative app store. Pushes 'recommended' app installs in the background, shows notifications about deals/promotions, and installs apps you didn't ask for. Major nuisance - this is why you find random games on your phone.|Major nuisance removal. Stops background junk app installs. Removes a persistent ad/recommendation engine.|Safe to remove. Play Store handles all app installs. No functionality breaks."
+  "com.xiaomi.discover|GetApps Discover|Companion to GetApps (mipicks). Provides the 'Discover' feed with app recommendations and promotions. Same background behavior as GetApps.|Same as GetApps - removes a recommendation/ad surface.|Safe to remove. Works together with mipicks removal."
 )
 
 BATCH3=(
-  "com.facebook.system|Meta background service|Tracking SDK; runs constantly even when you're not using Facebook."
-  "com.facebook.services|Meta app support service|Background helper for Facebook apps."
-  "com.facebook.appmanager|Meta app updater|Auto-updates FB apps; Play Store does this anyway."
+  "com.facebook.system|Meta background service (Facebook)|Meta's tracking SDK that runs as a system service. Tracks location, app usage, and device info even when you're NOT using Facebook or Instagram. Can receive push data from Meta servers.|Tracking SDK running constantly. Privacy concern - tracks you even without Facebook open.|Safe to remove. The Facebook app (com.facebook.katana) and Instagram still work - these are optional helper services, not required dependencies."
+  "com.facebook.services|Meta app support service|Background helper for Facebook/Instagram apps. Handles some cross-app communication and account syncing. Runs constantly.|Background helper that's not needed. Play Services handles account sync.|Safe to remove. Facebook and Instagram apps still work normally."
+  "com.facebook.appmanager|Meta app updater|Handles background updates for Facebook/Instagram/Messenger apps, bypassing Play Store update cycle. Can install/update Meta apps without your explicit consent.|Auto-updates FB apps without consent. Play Store does this anyway with your control.|Safe to remove. Facebook apps update via Play Store like everything else."
 )
 
 BATCH4=(
-  "com.microsoft.appmanager|Phone Link companion|Only useful if you use Phone Link on Windows."
-  "com.microsoft.deviceintegrationservice|Cross-device integration service|Same as above."
-  "com.microsoftsdk.crossdeviceservicebroker|SDK broker for Link to Windows|Same as above."
+  "com.microsoft.appmanager|Phone Link companion|Microsoft Phone Link (formerly Your Phone) companion app. Lets you text, call, see notifications, and mirror photos from your phone on a Windows PC. Runs in background looking for a paired PC.|Only useful if you use Phone Link on Windows. If you don't, it's wasted RAM and background activity.|Safe to remove. If you later want Phone Link, install it from Play Store. No system functionality breaks."
+  "com.microsoft.deviceintegrationservice|Cross-device integration service|Backend service for Phone Link. Handles the actual cross-device communication (notifications sync, file transfer, call relay). Runs in background.|Same as above - only useful with Phone Link on Windows.|Safe to remove. Same as appmanager - reinstall from Play Store if needed later."
+  "com.microsoftsdk.crossdeviceservicebroker|SDK broker for Link to Windows|SDK broker that mediates between Phone Link apps and the system. Background service.|Same as above - part of the Phone Link stack.|Safe to remove. Microsoft Word (com.microsoft.office.word) is NOT removed and still works."
 )
 
 BATCH5=(
-  "com.mi.appfinder|App drawer search bar|Spyware-ish; indexes app usage. Uses ~298 MB RAM."
-  "com.mi.globalminusscreen|Leftmost 'minus screen' with news/ads|Ad surface; rarely used. Uses ~255 MB RAM."
+  "com.mi.appfinder|App drawer search bar|The search bar at the top of the app drawer. Indexes your apps AND your app usage patterns. Sends usage data to Xiaomi for 'personalization'. Uses ~298 MB RAM when running.|Spyware-ish; indexes app usage and sends to Xiaomi. Big RAM user (~298 MB).|Safe to remove. App drawer still works, you just lose the search bar at the top. You can still search apps via the global search (swipe down on home screen)."
+  "com.mi.globalminusscreen|Minus screen (leftmost home screen page)|The leftmost page on the home screen that shows news, ads, 'recommended' apps, and widgets. Xiaomi sells this as ad inventory. Uses ~255 MB RAM.|Ad surface; rarely used. Big RAM user (~255 MB).|Safe to remove. The leftmost page just disappears. Home screen still works. You can add widgets to other pages."
 )
 
 BATCH6=(
-  "com.google.android.apps.tachyon|Google Duo/Meet|Video calling app. Replaced by WhatsApp/Discord. Uses ~83 MB RAM when running."
-  "com.google.android.apps.youtube.music|YouTube Music (system app)|Replaced by ReVanced YouTube Music."
-  "com.google.android.apps.wellbeing|Digital Wellbeing|Screen time tracker. Uses ~37 MB RAM when running."
-  "com.miui.misightservice|Xiaomi insights/telemetry|Same telemetry category as Joyose (Batch 1). Uses ~10 MB RAM when running."
-  "com.xiaomi.barrage|Xiaomi bullet comments (danmaku overlay)|Chinese-market feature for floating comments on videos. Useless outside China."
+  "com.google.android.apps.tachyon|Google Duo/Meet|Google's video calling app (rebranded to Meet). System app that can't be uninstalled normally. Runs in background and uses ~83 MB RAM when active.|Replaced by WhatsApp, Discord, Zoom, or other video calling apps you prefer. Frees ~83 MB RAM.|Safe to remove. If you want it back, install Google Meet from Play Store. No system functionality breaks."
+  "com.google.android.apps.youtube.music|YouTube Music (system app)|System version of YouTube Music. Redundant if you use ReVanced YouTube Music, Spotify, or any other music app.|Replaced by ReVanced YouTube Music or other music app.|Safe to remove. If you want it back, install from Play Store. No system functionality breaks."
+  "com.google.android.apps.wellbeing|Digital Wellbeing|Google's screen time tracker. Shows app usage time, sets app timers, wind-down mode, focus mode. Uses ~37 MB RAM when running.|Screen time tracker not used. Frees ~37 MB RAM.|Safe to remove. If you want it back, install from Play Store. No system functionality breaks."
+  "com.miui.misightservice|Xiaomi MiSight (insights/telemetry)|Xiaomi's insights and telemetry service. Collects device health, feature usage, and system metrics. Phones home to Xiaomi. Uses ~10 MB RAM when running.|Same telemetry category as Joyose (Batch 1). Stops another telemetry channel.|Safe to remove. No user-facing functionality breaks."
+  "com.xiaomi.barrage|Xiaomi Barrage (bullet comments)|Danmaku-style floating bullet comments overlay for videos. A Chinese market feature where viewers' comments float across the video. Useless outside China.|Chinese-market feature, useless outside China. Saves a small amount of RAM.|Safe to remove. No video playback functionality breaks. The feature was never useful outside China anyway."
 )
 
 BATCH7=(
-  "com.tencent.soter.soterserver|Tencent SOTER biometric auth server|Chinese biometric authentication standard for WeChat/QQ. Useless outside China. Uses ~6 MB RAM when running."
+  "com.tencent.soter.soterserver|Tencent SOTER (biometric auth server)|Tencent's SOTER (Secure Open Standard for Trusted Environment Recognition) biometric authentication server. Chinese industry standard for fingerprint/face login in apps like WeChat, QQ, Tencent games, and some banking apps. Uses ~6 MB RAM when running.|Chinese biometric auth standard for WeChat/QQ. Useless outside China unless you use Chinese apps with biometric login. Frees ~6 MB.|If you use WeChat, QQ, or Chinese banking apps with fingerprint login, do NOT remove this - those apps need it for biometric auth. Outside China and without those apps, it's safe to remove."
 )
 
 # ---------- Parse args ----------

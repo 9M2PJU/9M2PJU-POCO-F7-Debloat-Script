@@ -450,7 +450,7 @@ bash debloat.sh --batch 1
 
 ### What the interactive mode looks like
 
-When you run `bash debloat.sh` (without `--yes`), it walks you through each package one by one, showing a card with context and numbered options:
+When you run `bash debloat.sh` (without `--yes`), it walks you through each package one by one, showing a full info card with context and numbered options:
 
 ```
 === Batch 1: Ad/telemetry (4 packages) ===
@@ -460,7 +460,12 @@ current RAM usage. Then choose: 1 (remove), 2 (keep), or 3 (skip batch).
 
   Package:  com.miui.msa.global
   What:     Xiaomi Ad SDK (MSA)
-  Why:      Pushes ads in Notifications, GetApps, Settings. Single biggest privacy win.
+  Details:  Xiaomi Mobile Ad SDK. Injects ads into Notification shade, Settings app,
+            GetApps, Security Center, and other Xiaomi apps. Runs as a persistent
+            background service. The single biggest source of in-OS ads on HyperOS.
+  Why:      Biggest privacy and UX win. Removes ads from the entire OS. Stops
+            ad-targeting data collection.
+  Caveats:  Safe to remove. No system functionality breaks. Ads simply stop appearing.
 
   1) Remove
   2) Keep
@@ -469,32 +474,28 @@ current RAM usage. Then choose: 1 (remove), 2 (keep), or 3 (skip batch).
   OK    com.miui.msa.global
 
   Package:  com.xiaomi.joyose
-  What:     Telemetry + Game Turbo backend
-  Why:      Stops Xiaomi usage analytics. Disables Game Turbo advanced features.
+  What:     Xiaomi Joyose (telemetry + Game Turbo)
+  Details:  Background service handling usage analytics, device health reporting, and
+            Game Turbo backend. Phones home with usage patterns, app launch data, and
+            performance metrics. Also powers Game Turbo's per-game performance profiles.
+  Why:      Stops Xiaomi usage analytics and telemetry reporting. Reclaim background
+            CPU and RAM.
+  Caveats:  Removing disables Game Turbo advanced features (per-game GPU/CPU tuning,
+            brightness lock, calls blocking during games). Basic gaming still works.
 
   1) Remove
   2) Keep
   3) Skip rest of this batch
   Choose [1-3] (default 2): 2
   Kept: com.xiaomi.joyose
-
-  Package:  com.miui.analytics
-  What:     Usage analytics
-  Why:      Stops usage pattern reporting to Xiaomi.
-
-  1) Remove
-  2) Keep
-  3) Skip rest of this batch
-  Choose [1-3] (default 2): 3
-  Skipping rest of batch 1.
-
-Batch 1 partially done. Removed 1 package(s).
 ```
 
 For each package, you see:
 - **Package**: the package name
-- **What**: a short description of what it is
+- **What**: a short name/description
+- **Details**: what the app actually does (the full picture - tracking, background behavior, features)
 - **Why**: why it's being removed (the rationale)
+- **Caveats**: what may break or change if removed (so you know the trade-offs)
 - **Now**: current RAM usage if the package is running (e.g. "83 MB RAM")
 
 Then you choose:
@@ -502,7 +503,7 @@ Then you choose:
 - **2** (or Enter) - keep this package
 - **3** - skip the rest of this batch
 
-The option labels include context (like RAM savings) so you can decide at a glance. This lets you make an informed decision on each package, just like a guided debloat. If you just want everything removed without prompting, use `--yes`.
+The full info card gives you everything you need to decide - what the app does, why it's a candidate for removal, and exactly what happens if you remove it. If you just want everything removed without prompting, use `--yes`.
 
 After each batch, **test the phone** (unlock, open Settings, open the launcher, take a screenshot, reboot once). If anything breaks, restore that batch:
 
@@ -617,12 +618,17 @@ Restore uses `pm install-existing --user 0`, which re-registers the app from the
 
 ### What the interactive restore looks like
 
-When you run `bash restore.sh` (without `--yes`), it walks you through each removed package one by one, showing a card with context and numbered options:
+When you run `bash restore.sh` (without `--yes`), it walks you through each removed package one by one, showing a full info card with context and numbered options:
 
 ```
-  Package:  com.miui.msa.global
-  What:     Xiaomi Ad SDK (MSA)
-  History:  Was removed: pushes ads in Notifications, GetApps, Settings.
+  Package:   com.miui.msa.global
+  What:      Xiaomi Ad SDK (MSA)
+  Details:   Xiaomi Mobile Ad SDK. Injects ads into Notification shade, Settings,
+             GetApps, Security Center. Persistent background service. Biggest
+             source of in-OS ads.
+  History:   Was removed: pushes ads across the OS and collects ad-targeting data.
+  Restoring: Restoring re-enables ads in Notification shade, Settings, and other
+             Xiaomi apps.
   Status:    currently removed
 
   1) Restore
@@ -631,9 +637,13 @@ When you run `bash restore.sh` (without `--yes`), it walks you through each remo
   Choose [1-3] (default 2): 1
   OK    com.miui.msa.global
 
-  Package:  com.xiaomi.joyose
-  What:     Telemetry + Game Turbo backend
-  History:  Was removed: Xiaomi usage analytics. Note: restoring re-enables Game Turbo.
+  Package:   com.xiaomi.joyose
+  What:      Xiaomi Joyose (telemetry + Game Turbo)
+  Details:   Background service: usage analytics, device health reporting, Game
+             Turbo backend. Phones home with usage patterns and performance metrics.
+  History:   Was removed: Xiaomi usage analytics and telemetry.
+  Restoring: Restoring re-enables Game Turbo advanced features (per-game GPU/CPU
+             tuning, brightness lock, calls blocking during games).
   Status:    currently removed
 
   1) Restore
@@ -645,8 +655,10 @@ When you run `bash restore.sh` (without `--yes`), it walks you through each remo
 
 For each package, you see:
 - **Package**: the package name
-- **What**: a short description of what it is
+- **What**: a short name/description
+- **Details**: what the app actually does (the full picture)
 - **History**: why it was originally removed (so you can decide if you want it back)
+- **Restoring**: what happens if you restore it (so you know the consequences)
 - **Status**: whether it's currently installed or removed
 
 Then you choose:
@@ -654,7 +666,7 @@ Then you choose:
 - **2** (or Enter) - keep it removed
 - **3** - skip the rest of the restore list
 
-This lets you selectively restore only what you actually want back, with full context on what each package is and why it was removed.
+The full info card gives you everything you need to decide - what the app does, why it was removed, and exactly what re-enabling it means. This lets you selectively restore only what you actually want back.
 
 ### The nuclear undo
 
