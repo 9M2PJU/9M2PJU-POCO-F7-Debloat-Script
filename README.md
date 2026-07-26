@@ -79,7 +79,7 @@ Three bash scripts that talk to your POCO F7 over `adb`:
 |---|---|
 | `install.sh` | One-liner installer - downloads `debloat.sh` + `restore.sh` from GitHub and runs debloat interactively |
 | `debloat.sh` | Removes 26 known-safe bloat packages in 6 small batches. Interactive mode explains each package and prompts y/N/s per package. Also supports `--yes` (non-interactive) and `--list` (dry-run) |
-| `restore.sh` | Restores any removed package instantly from the untouched `/system` partition (no internet needed) |
+| `restore.sh` | Restores removed packages from the untouched `/system` partition (no internet needed). Interactive mode explains each package and prompts y/N/s per package. Also supports `--yes`, `--list`, `--batch N`, and explicit package names |
 
 Everything is **reversible**, **no root**, **no bootloader unlock**, **no warranty impact**, **no banking/Play Integrity breakage**.
 
@@ -438,8 +438,11 @@ When `debloat.sh` runs, it creates a `backup/` folder (if missing) and writes:
 ### How to restore
 
 ```bash
-# Restore everything in the log
+# Interactive: explains each package and prompts y/N/s (default)
 bash restore.sh
+
+# Non-interactive: restore everything without prompting
+bash restore.sh --yes
 
 # Restore one specific package
 bash restore.sh com.miui.msa.global
@@ -447,7 +450,7 @@ bash restore.sh com.miui.msa.global
 # Restore several packages
 bash restore.sh com.miui.msa.global com.xiaomi.joyose com.miui.analytics
 
-# Restore a specific batch (1-5)
+# Restore a specific batch (1-6)
 bash restore.sh --batch 3
 
 # Preview what would be restored (dry run)
@@ -455,6 +458,39 @@ bash restore.sh --list
 ```
 
 Restore uses `pm install-existing --user 0`, which re-registers the app from the **untouched `/system` APK** - instant, no internet required. If a package was disabled rather than uninstalled, the script falls back to `pm enable`.
+
+### What the interactive restore looks like
+
+When you run `bash restore.sh` (without `--yes`), it walks you through each removed package one by one:
+
+```
+  Package:  com.miui.msa.global
+  What:     Xiaomi Ad SDK (MSA)
+  History:  Was removed: pushes ads in Notifications, GetApps, Settings.
+  Status:    currently removed
+  Restore this package? [y/N/s] y
+  OK    com.miui.msa.global
+
+  Package:  com.xiaomi.joyose
+  What:     Telemetry + Game Turbo backend
+  History:  Was removed: Xiaomi usage analytics. Note: restoring re-enables Game Turbo.
+  Status:    currently removed
+  Restore this package? [y/N/s] n
+  Skipped: com.xiaomi.joyose
+```
+
+For each package, you see:
+- **Package**: the package name
+- **What**: a short description of what it is
+- **History**: why it was originally removed (so you can decide if you want it back)
+- **Status**: whether it's currently installed or removed
+
+Then you choose:
+- **y** - restore this package
+- **n** (or Enter) - skip this package (keep it removed)
+- **s** - skip the rest of the restore list
+
+This lets you selectively restore only what you actually want back, with full context on what each package is and why it was removed.
 
 ### The nuclear undo
 
