@@ -78,7 +78,7 @@ Three bash scripts that talk to your POCO F7 over `adb`:
 | Script | Purpose |
 |---|---|
 | `install.sh` | One-liner installer - downloads `debloat.sh` + `restore.sh` from GitHub and runs debloat interactively |
-| `debloat.sh` | Removes 26 known-safe bloat packages in 6 small batches, with interactive prompts and a dry-run mode |
+| `debloat.sh` | Removes 26 known-safe bloat packages in 6 small batches. Interactive mode explains each package and prompts y/N/s per package. Also supports `--yes` (non-interactive) and `--list` (dry-run) |
 | `restore.sh` | Restores any removed package instantly from the untouched `/system` partition (no internet needed) |
 
 Everything is **reversible**, **no root**, **no bootloader unlock**, **no warranty impact**, **no banking/Play Integrity breakage**.
@@ -300,15 +300,59 @@ adb devices -l
 # 3. Preview what would be removed (dry run, changes nothing)
 bash debloat.sh --list
 
-# 4. Run interactively (prompts y/N before each batch)
+# 4. Run interactively (explains each package, prompts y/N/s per package)
 bash debloat.sh
 
-# Or run non-interactively (removes all 6 batches)
+# Or run non-interactively (removes all 6 batches without prompting)
 bash debloat.sh --yes
 
 # Or run a single batch only
 bash debloat.sh --batch 1
 ```
+
+### What the interactive mode looks like
+
+When you run `bash debloat.sh` (without `--yes`), it walks you through each package one by one:
+
+```
+=== Batch 1: Ad/telemetry (4 packages) ===
+
+For each package, you'll see what it is and why it's being removed.
+Answer y to remove, n to keep, s to skip the rest of this batch.
+
+  Package:  com.miui.msa.global
+  What:     Xiaomi Ad SDK (MSA)
+  Why:      Pushes ads in Notifications, GetApps, Settings. Single biggest privacy win.
+  Remove this package? [y/N/s] y
+  OK    com.miui.msa.global
+
+  Package:  com.xiaomi.joyose
+  What:     Telemetry + Game Turbo backend
+  Why:      Stops Xiaomi usage analytics. Disables Game Turbo advanced features.
+  Remove this package? [y/N/s] n
+  Kept: com.xiaomi.joyose
+
+  Package:  com.miui.analytics
+  What:     Usage analytics
+  Why:      Stops usage pattern reporting to Xiaomi.
+  Remove this package? [y/N/s] s
+  Skipping rest of batch 1.
+
+Batch 1 partially done. Removed 1 package(s).
+```
+
+For each package, you see:
+- **Package**: the package name
+- **What**: a short description of what it is
+- **Why**: why it's being removed (the rationale)
+- **Now**: current RAM usage if the package is running (e.g. "83 MB RAM")
+
+Then you choose:
+- **y** - remove this package
+- **n** (or Enter) - keep this package
+- **s** - skip the rest of this batch
+
+This lets you make an informed decision on each package, just like a guided debloat. If you just want everything removed without prompting, use `--yes`.
 
 After each batch, **test the phone** (unlock, open Settings, open the launcher, take a screenshot, reboot once). If anything breaks, restore that batch:
 
