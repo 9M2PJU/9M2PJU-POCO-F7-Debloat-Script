@@ -47,6 +47,12 @@ curl -fsSL https://raw.githubusercontent.com/9M2PJU/9M2PJU-POCO-F7-Debloat-Scrip
 - [How it works (the science)](#how-it-works-the-science)
 - [Repository structure](#repository-structure)
 - [Requirements](#requirements)
+  - [Step 1: Install `adb` on your computer](#step-1-install-adb-on-your-computer)
+  - [Step 2: Enable Developer Options on the phone](#step-2-enable-developer-options-on-the-phone)
+  - [Step 3: Enable USB debugging](#step-3-enable-usb-debugging)
+  - [Step 4: Connect the phone and authorize the computer](#step-4-connect-the-phone-and-authorize-the-computer)
+  - [Step 5: Verify the connection](#step-5-verify-the-connection)
+  - [Troubleshooting the ADB connection](#troubleshooting-the-adb-connection)
 - [Quick start](#quick-start)
 - [The debloat batches explained](#the-debloat-batches-explained)
 - [Backup & restore](#backup--restore)
@@ -158,11 +164,121 @@ The `backup/` folder is committed so others can see exactly what was removed on 
 - A POCO F7 (or any Xiaomi device running HyperOS 2 - package names may differ on other models)
 - A computer with `adb` (Android Platform Tools) installed and in `PATH`
 - A USB cable (data-capable, not charge-only)
-- USB debugging enabled on the phone:
-  1. Settings → About phone → tap "HyperOS version" / "MIUI version" 7 times to unlock Developer options
-  2. Settings → Additional settings → Developer options → enable **USB debugging**
-  3. Plug in the phone, accept the "Allow USB debugging?" prompt
-- Verify with `adb devices -l` - your phone should show as `device` (not `unauthorized`)
+- USB debugging enabled on the phone (see below)
+
+### Step 1: Install `adb` on your computer
+
+**Linux:**
+```bash
+# Debian / Ubuntu / Mint
+sudo apt install adb
+
+# Arch / Manjaro / CachyOS
+sudo pacman -S android-tools
+
+# Fedora
+sudo dnf install android-tools
+```
+
+**macOS:**
+```bash
+brew install android-platform-tools
+```
+
+**Windows:**
+- Download Platform Tools from https://developer.android.com/tools/releases/platform-tools
+- Extract the ZIP to e.g. `C:\platform-tools`
+- Add `C:\platform-tools` to your PATH, or open a terminal in that folder
+
+Verify it works:
+```bash
+adb version
+```
+
+### Step 2: Enable Developer Options on the phone
+
+These steps are for HyperOS 2 on the POCO F7. The flow is similar on other Xiaomi devices.
+
+1. Open **Settings**
+2. Tap **About phone** (top of the settings list)
+3. Find the entry labeled **"HyperOS version"** (on older MIUI: **"MIUI version"**)
+   - On the POCO F7 it's the tile that shows the HyperOS logo and version string
+4. Tap it **7 times rapidly** in a row
+5. You'll see a countdown toast: *"You are N steps away from being a developer"*
+6. After the 7th tap, you'll see: *"You are now a developer"*
+7. Developer Options is now unlocked
+
+> If you don't see the toast, you may already be a developer. Try tapping 3-4 more times - you'll get *"You are already a developer"*.
+
+### Step 3: Enable USB debugging
+
+1. Go back to the main **Settings** screen
+2. Scroll down and tap **Additional settings** (sometimes labeled **More settings**)
+3. At the very bottom, you'll now see **Developer options** - tap it
+4. Toggle **Developer options** ON at the top (the master switch)
+5. Scroll down to the **Debugging** section
+6. Toggle **USB debugging** ON
+7. A dialog appears: *"Allow USB debugging? / USB debugging is intended for development purposes only..."* - tap **OK**
+8. (Optional but recommended) Also enable **"Install via USB"** - some HyperOS builds require this for `pm install-existing` to work during restore
+9. (Optional) Enable **"USB debugging (Security settings)"** if present - allows signing into some Xiaomi services over ADB. Not required for debloat.
+
+### Step 4: Connect the phone and authorize the computer
+
+1. Plug the phone into your computer with a **data-capable USB cable** (some cables only carry power - if `adb devices` shows nothing, try a different cable)
+2. Pull down the **notification shade** on the phone
+3. Tap the USB notification (usually says "Charging this device via USB" or "USB charging")
+4. Change USB mode to **"File transfer"** / **"MTP"** (some HyperOS builds need this for ADB to be detected)
+5. A dialog appears on the phone: *"Allow USB debugging?* / *The computer's RSA key fingerprint is: XX:XX:XX:..."*
+6. (Recommended) Check the box **"Always allow from this computer"**
+7. Tap **Allow** / **OK**
+
+### Step 5: Verify the connection
+
+On your computer, run:
+```bash
+adb devices -l
+```
+
+You should see something like:
+```
+List of devices attached
+db80429a               device usb:1-1.2 product:onyx_global model:25053PC47G device:onyx transport_id:1
+```
+
+The state column should say **`device`**. If it says:
+- **`unauthorized`** - you didn't accept the prompt on the phone, or you need to revoke and re-authorize (see Troubleshooting below)
+- **`offline`** - the cable or USB port is flaky, or ADB server is stuck - try `adb kill-server && adb start-server` and replug
+- **(empty list)** - cable is charge-only, USB mode is wrong, or driver issue (Windows)
+
+### Troubleshooting the ADB connection
+
+**`adb devices` shows nothing:**
+- Make sure the cable is data-capable (try a different cable - many cheap cables are charge-only)
+- Try a different USB port (prefer USB-A on a desktop, not a hub)
+- On the phone, pull down the notification shade and switch USB mode to **"File transfer"**
+- Restart the ADB server: `adb kill-server && adb start-server`
+- On Windows, you may need to install the **Xiaomi USB driver** (download from https://miuirom.org/xiaomi-usb-drivers or use the generic Google USB driver from Platform Tools)
+
+**`adb devices` shows `unauthorized`:**
+- Look at the phone screen - there should be an "Allow USB debugging?" dialog. Tap **Allow**.
+- If you previously denied it, revoke and retry:
+  1. On the phone: Settings → Additional settings → Developer options → scroll to bottom → **"Revoke USB debugging authorizations"**
+  2. Tap **OK** on the confirmation
+  3. Unplug and replug the USB cable
+  4. Accept the new authorization prompt
+
+**`adb devices` shows `offline`:**
+- `adb kill-server && adb start-server`
+- Replug the cable
+- Try a different USB port
+
+**The "Allow USB debugging?" prompt never appears:**
+- Make sure USB mode is set to **"File transfer"** (not "Charging only" or "PTP")
+- Toggle USB debugging OFF and back ON in Developer options
+- Revoke authorizations (see above) and replug
+
+**Developer options disappeared after a reboot:**
+- This shouldn't happen on HyperOS 2. If it does, re-do Step 2 (tap HyperOS version 7 times). Some Xiaomi accounts sync this setting - sign out of Mi Account in Settings → Mi Account if it keeps resetting.
 
 ---
 
@@ -406,22 +522,7 @@ Replace the battery when "learned" capacity drops below ~5200 mAh (80%).
 
 ## Troubleshooting
 
-### `adb devices` shows nothing
-
-- USB debugging not enabled → Settings → Additional settings → Developer options → USB debugging
-- Cable is charge-only → use a data cable
-- USB mode wrong → pull down notification shade, switch to "File transfer (MTP)"
-- Authorization prompt not accepted → tap "Allow" on the phone when prompted
-- ADB server stuck → `adb kill-server && adb start-server`
-
-### `adb devices` shows `unauthorized`
-
-Accept the "Allow USB debugging?" prompt on the phone. If you previously denied it:
-```bash
-adb shell pm clear com.android.providers.settings  # not recommended
-# Better: revoke and re-authorize
-# Developer options → Revoke USB debugging authorizations → replug
-```
+> For ADB connection issues (device not detected, `unauthorized`, `offline`), see [Troubleshooting the ADB connection](#troubleshooting-the-adb-connection) under Requirements above.
 
 ### A removal fails with `DELETE_FAILED_INTERNAL_ERROR`
 
